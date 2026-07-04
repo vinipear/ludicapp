@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lúdica · bem-te-vi — planejamento de sessões</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Nunito+Sans:wght@400;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --paper:#EEF2F2;--card:#FFFFFF;--ink:#243536;--ink-soft:#6E8080;
+  --primary:#4DA1A9;--primary-deep:#3C858C;--primary-tint:#E1EFF0;
+  --deep:#1C4649;--secondary:#F4A261;--secondary-deep:#D9873F;--secondary-tint:#FCEBDA;
+  --gold:#E9C46A;--gold-tint:#F8EDCF;--line:#E1E8E8;--cream:#F3F7F7;
+  /* aliases: mantêm classes antigas funcionando com a nova paleta */
+  --brown-deep:var(--deep);
+  --terra:var(--primary);--terra-deep:var(--primary-deep);--terra-tint:var(--primary-tint);
+  --sand:var(--gold);--sand-tint:var(--gold-tint);--rose-tint:var(--secondary-tint);
+}
+body{font-family:'Nunito Sans',system-ui,sans-serif;color:var(--ink);background:var(--paper);min-height:100vh;line-height:1.5;-webkit-font-smoothing:antialiased}
+.display{font-family:'Quicksand',sans-serif;letter-spacing:-.005em}
+
+.top{background:var(--card);position:sticky;top:0;z-index:20;border-bottom:1px solid var(--line)}
+.top-in{max-width:1120px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:11px}
+.mark{width:42px;height:42px;border-radius:13px;background:var(--primary-tint);display:grid;place-items:center;flex-shrink:0}
+.title{font-size:22px;font-weight:700;color:var(--primary)}
+.sub{font-size:12px;color:var(--ink-soft)}
+.nav{display:flex;gap:4px;margin-left:auto;background:var(--paper);padding:4px;border-radius:14px}
+.nav button{border:0;background:transparent;font-family:inherit;font-size:13.5px;font-weight:700;color:var(--ink-soft);padding:8px 14px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background .15s,color .15s}
+.nav button:hover{color:var(--primary-deep)}
+.nav button.on{background:var(--primary);color:#fff}
+.owner{display:flex;align-items:center;gap:9px}
+.owner-av{width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;display:grid;place-items:center;font-weight:700;font-size:13px;font-family:'Quicksand',sans-serif;flex-shrink:0}
+.owner-name{font-size:13px;font-weight:700;color:var(--ink);line-height:1.2}
+.owner-sub{font-size:10.5px;color:var(--ink-soft);letter-spacing:.02em}
+.gear{border:1px solid var(--line);background:var(--card);border-radius:10px;width:38px;height:38px;display:grid;place-items:center;cursor:pointer;color:var(--ink-soft)}
+.gear:hover{border-color:var(--primary);color:var(--primary)}
+
+.main{max-width:1120px;margin:0 auto;padding:28px 24px 80px;position:relative}
+.blob{display:none}
+.canvas{position:relative;z-index:1}
+.h2{font-family:'Quicksand',sans-serif;font-size:26px;font-weight:700;color:var(--terra);margin-bottom:4px;letter-spacing:-.01em}
+.lead{color:var(--ink-soft);font-size:14px;margin-bottom:22px;max-width:60ch}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;transition:box-shadow .18s,border-color .18s}
+.item-card:hover,.gcard:hover{box-shadow:0 4px 14px rgba(62,42,30,.07);border-color:#D9C9A8}
+.greet{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 18px;margin-bottom:24px}
+.hero{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:6px}
+.hero-title{font-size:28px;font-weight:700;color:var(--ink)}
+.hero-sub{color:var(--ink-soft);font-size:14.5px;margin-top:1px}
+.hero-stats{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap}
+.stat{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:var(--ink-soft);background:var(--card);border:1px solid var(--line);padding:7px 13px;border-radius:999px}
+.stat svg{width:15px;height:15px;color:var(--primary)}
+.stat b{color:var(--primary-deep);font-size:14px}
+.qa-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:20px 0 30px}
+.qa{border:0;cursor:pointer;font-family:'Quicksand',sans-serif;font-weight:700;font-size:14px;border-radius:18px;padding:22px 16px;display:flex;flex-direction:column;align-items:center;gap:11px;transition:transform .1s,box-shadow .18s;color:#fff}
+.qa svg{width:26px;height:26px}
+.qa:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(36,53,54,.13)}
+.qa.teal{background:var(--primary)}
+.qa.apricot{background:var(--secondary)}
+.qa.plain{background:var(--card);color:var(--primary-deep);border:1px solid var(--line)}
+.qa.plain:hover{box-shadow:0 8px 18px rgba(36,53,54,.08)}
+@media(max-width:760px){.qa-grid{grid-template-columns:repeat(2,1fr)}}
+.set-sec{border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:11px}
+.set-sec>h5{font-family:'Quicksand',sans-serif;font-weight:700;font-size:14.5px;color:var(--terra-deep);display:flex;align-items:center;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--sand-tint);color:var(--ink)}
+.chip.dim{background:#EFE8D6;color:var(--ink-soft)}
+.chip.hit{background:var(--terra-tint);color:var(--terra-deep);font-weight:700}
+.chip.demanda{background:var(--secondary-tint);color:var(--secondary-deep)}
+.btn{font-family:inherit;font-weight:600;font-size:14px;border-radius:11px;cursor:pointer;padding:10px 16px;border:1px solid var(--line);background:var(--card);color:var(--ink);display:inline-flex;align-items:center;gap:8px;transition:transform .06s,background .15s,border-color .15s}
+.btn:hover{border-color:var(--terra)}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.55;cursor:default}
+.btn.primary{background:var(--terra);color:var(--cream);border-color:var(--terra)}
+.btn.primary:hover{background:var(--terra-deep);border-color:var(--terra-deep)}
+.btn.accent{background:var(--brown-deep);color:var(--gold);border-color:var(--brown-deep)}
+.btn.accent:hover{background:#4a2f1f}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--ink-soft);padding:8px 10px}
+.btn.ghost:hover{background:var(--sand-tint);color:var(--ink)}
+.btn.sm{padding:7px 12px;font-size:13px}
+.btn:focus-visible,.nav button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.toggle:focus-visible{outline:2px solid var(--terra);outline-offset:2px}
+
+.plan{display:grid;grid-template-columns:1fr 360px;gap:22px;align-items:start}
+.flabel{font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:7px;display:block}
+select,.input,textarea.input{width:100%;font-family:inherit;font-size:14px;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:11px;padding:11px 13px}
+select:hover,.input:hover{border-color:var(--terra)}
+.pat{display:flex;align-items:center;gap:14px;padding:16px 18px}
+.avatar{width:46px;height:46px;border-radius:14px;background:var(--primary-tint);color:var(--primary-deep);display:grid;place-items:center;font-weight:700;font-family:'Quicksand',sans-serif;font-size:15px;flex-shrink:0}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.glist{display:flex;flex-direction:column;gap:12px}
+.gcard{padding:15px 16px;display:flex;gap:14px;align-items:flex-start}
+.rank{font-family:'Quicksand',sans-serif;font-size:14px;font-weight:700;color:var(--cream);background:var(--terra);width:26px;height:26px;border-radius:8px;display:grid;place-items:center;flex-shrink:0;margin-top:2px}
+.gname{font-weight:600;font-size:15.5px}
+.why{font-size:12.5px;color:var(--ink-soft);margin-top:6px}
+.alert-uso{font-size:12px;font-weight:600;color:var(--terra-deep);background:var(--terra-tint);display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:8px;margin-top:7px}
+.panel{position:sticky;top:82px}
+.panel-head{padding:15px 16px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px;color:var(--terra)}
+.panel-head b{color:var(--ink)}
+.sess-item{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--line)}
+.sess-item:last-child{border-bottom:0}
+.empty{padding:26px 18px;text-align:center;color:var(--ink-soft);font-size:13.5px}
+.order{display:flex;flex-direction:column}
+.order button{border:0;background:transparent;cursor:pointer;color:var(--ink-soft);padding:0;height:15px;line-height:0}
+.order button:hover{color:var(--terra)}
+.ai{border:1px dashed var(--terra);background:var(--terra-tint);border-radius:14px;padding:15px 16px;margin-top:16px}
+.ai h4{font-size:13.5px;color:var(--terra-deep);display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.item-card{padding:16px;display:flex;flex-direction:column;gap:10px}
+.item-actions{display:flex;gap:4px;margin-left:auto}
+.toggles{display:flex;flex-wrap:wrap;gap:8px}
+.toggle{font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;border-radius:999px;padding:6px 12px;border:1px solid var(--line);background:var(--card);color:var(--ink-soft)}
+.toggle.on{background:var(--terra);color:var(--cream);border-color:var(--terra)}
+.scrim{position:fixed;inset:0;background:rgba(58,36,23,.5);display:grid;place-items:center;padding:20px;z-index:50}
+.modal{background:var(--card);border-radius:18px;width:100%;max-width:560px;max-height:88vh;overflow:auto}
+.modal-head{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center}
+.modal-body{padding:20px;display:flex;flex-direction:column;gap:16px}
+.modal-foot{padding:16px 20px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end}
+.plano-jogo{padding:12px 14px;border:1px solid var(--line);border-radius:12px}
+.muted{color:var(--ink-soft);font-size:13px}
+.spin{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.rise{animation:rise .25s ease both}
+.row{display:flex;gap:12px}
+.grow{flex:1}
+/* logo nos 3 contextos */
+.logo-svg svg{height:32px;width:auto;display:block}
+.hero-logo svg{height:44px;width:auto;display:block;margin-bottom:10px}
+.auth-logo svg{height:52px;width:auto;display:block;margin:0 auto 18px}
+/* evolução */
+.evo-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:16px 0 24px}
+.evo-stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px}
+.evo-stat .num{font-family:'Quicksand',sans-serif;font-size:26px;font-weight:700;color:var(--primary-deep)}
+.evo-stat .lbl{font-size:12px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em}
+.tl{position:relative;padding-left:26px}
+.tl::before{content:'';position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:var(--line)}
+.tl-item{position:relative;margin-bottom:14px}
+.tl-item::before{content:'';position:absolute;left:-24px;top:16px;width:12px;height:12px;border-radius:50%;background:var(--primary);border:3px solid var(--paper)}
+.tl-item.planejada::before{background:var(--secondary)}
+/* agenda */
+.ag-day{margin-bottom:18px}
+.ag-day-h{font-family:'Quicksand',sans-serif;font-weight:700;font-size:14px;color:var(--primary-deep);margin-bottom:8px;text-transform:capitalize}
+.ag-ev{display:flex;align-items:center;gap:12px;padding:12px 15px;margin-bottom:8px}
+.ag-hora{font-family:'Quicksand',sans-serif;font-weight:700;font-size:14px;color:var(--secondary-deep);min-width:88px}
+/* relatório (impressão) */
+.rep{font-size:13.5px}
+.rep-head{display:flex;align-items:center;justify-content:space-between;gap:14px;border-bottom:3px solid var(--primary);padding-bottom:14px;margin-bottom:6px}
+.rep-head svg{height:34px;width:auto}
+.rep-title{font-family:'Quicksand',sans-serif;font-weight:700;font-size:19px;color:var(--primary-deep);text-align:right}
+.rep-meta{display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;padding:12px 0;border-bottom:1px solid var(--line);margin-bottom:14px}
+.rep-meta div{font-size:13px}
+.rep-meta b{color:var(--primary-deep)}
+.rep-sess{border:1px solid var(--line);border-left:4px solid var(--primary);border-radius:12px;padding:13px 15px;margin-bottom:11px;page-break-inside:avoid}
+.rep-sess.planejada{border-left-color:var(--secondary)}
+.rep-sess h6{font-family:'Quicksand',sans-serif;font-size:13.5px;font-weight:700;color:var(--ink);margin-bottom:6px}
+.rep-sec{font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em;margin:8px 0 4px}
+.rep-foot{margin-top:18px;padding-top:10px;border-top:1px solid var(--line);font-size:11px;color:var(--ink-soft);display:flex;justify-content:space-between}
+@page{margin:16mm}
+.center{min-height:100vh;display:grid;place-items:center;padding:24px}
+.auth-card{background:var(--card);border:1px solid var(--line);border-radius:20px;max-width:400px;width:100%;padding:30px;text-align:center}
+.auth-card .flabel{text-align:left}
+.auth-mark{width:54px;height:54px;border-radius:16px;background:var(--brown-deep);display:grid;place-items:center;margin:0 auto 16px}
+.link{background:none;border:0;color:var(--terra-deep);font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;text-decoration:underline;padding:0}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--brown-deep);color:var(--cream);padding:12px 18px;border-radius:12px;font-size:13.5px;font-weight:500;z-index:80;box-shadow:0 6px 20px rgba(0,0,0,.2);max-width:90vw}
+.toast.err{background:#8a3b2a}
+@media (max-width:900px){.owner-txt{display:none}}
+@media (max-width:860px){.plan{grid-template-columns:1fr}.panel{position:static}.nav{order:3;width:100%;overflow:auto}.blob{display:none}}
+@media (prefers-reduced-motion:reduce){.rise,.spin{animation:none}}
+@media print{
+  .top,.nav,.gear,.blob{display:none}
+  .main{padding:0}
+  body:has(.scrim) .main,body:has(.scrim) .top{display:none}
+  .scrim{position:static;background:none;padding:0;display:block}
+  .modal{max-width:none;max-height:none;overflow:visible;border:0;border-radius:0}
+  .modal-foot,.modal-head .btn{display:none}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<!-- Biblioteca do Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Leitor de planilhas (xlsx / csv) -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<!-- Google Identity Services (OAuth da Agenda) -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+/* ============================================================
+   1) CONFIGURAÇÃO — troque pelos dados do SEU projeto Supabase
+   (Supabase → Project Settings → Data API / API Keys)
+   A anon key pode ficar aqui: o RLS protege os dados.
+   ============================================================ */
+const SUPABASE_URL      = "https://kfooeihpigredfkvhxpw.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtmb29laWhwaWdyZWRma3ZoeHB3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxMDA5NDIsImV4cCI6MjA5ODY3Njk0Mn0.yonc-jn1YGPDln4a0lbDl1VElbfIpheo0n5AE1ReEjM";
+
+/* ============================================================
+   2) MARCA — pra vender/personalizar pra outra psicóloga,
+   basta trocar aqui (e, se quiser, o LOGO_SVG/ICON_SVG e as
+   cores no :root do CSS). O nome da profissional NÃO fica
+   aqui: vem do perfil de quem faz login (Configurações).
+   ============================================================ */
+const BRAND = {
+  nome: "Lúdica",
+  subtitulo: "planejamento de sessões",
+  clinica: "bem-te-vi · espaço terapêutico"
+};
+document.title = `${BRAND.nome} — ${BRAND.subtitulo}`;
+
+/* ============================================================
+   3) GOOGLE AGENDA (opcional) — pra ativar a aba Agenda:
+   a) console.cloud.google.com → criar projeto → "APIs e serviços"
+   b) Ativar a "Google Calendar API"
+   c) Tela de consentimento OAuth (tipo Externo, publicar)
+   d) Credenciais → Criar credencial → ID do cliente OAuth →
+      Aplicativo da Web → em "Origens JavaScript autorizadas"
+      adicionar o endereço onde o Lúdica está hospedado
+   e) Colar o Client ID abaixo (termina com .apps.googleusercontent.com)
+   Sem isso, a aba Agenda mostra as instruções de ativação.
+   ============================================================ */
+const GOOGLE_CLIENT_ID = "";
+
+/* ============================ DADOS FIXOS ============================ */
+const AREAS = [
+  "Atenção sustentada","Atenção seletiva","Controle inibitório","Memória de trabalho",
+  "Flexibilidade cognitiva","Planejamento","Organização","Velocidade de processamento",
+  "Percepção visuoespacial","Coordenação motora fina","Raciocínio lógico","Linguagem / vocabulário",
+  "Categorização","Habilidades sociais","Regulação emocional","Tolerância à frustração",
+  "Espera de turno","Teoria da mente"
+];
+const DEMANDAS = [
+  {nome:"TDAH",areas:["Atenção sustentada","Atenção seletiva","Controle inibitório","Memória de trabalho","Planejamento","Organização","Espera de turno","Tolerância à frustração"]},
+  {nome:"TEA",areas:["Habilidades sociais","Teoria da mente","Flexibilidade cognitiva","Linguagem / vocabulário","Regulação emocional"]},
+  {nome:"Dificuldades de aprendizagem",areas:["Memória de trabalho","Atenção sustentada","Planejamento","Raciocínio lógico","Percepção visuoespacial"]},
+  {nome:"Regulação emocional / TOD",areas:["Regulação emocional","Tolerância à frustração","Controle inibitório","Espera de turno"]},
+  {nome:"Ansiedade",areas:["Regulação emocional","Tolerância à frustração","Atenção sustentada"]},
+  {nome:"Habilidades sociais",areas:["Habilidades sociais","Teoria da mente","Espera de turno","Linguagem / vocabulário"]},
+  {nome:"Funções executivas",areas:["Flexibilidade cognitiva","Controle inibitório","Memória de trabalho","Planejamento","Organização"]}
+];
+// jogos de exemplo pra popular o banco (botão no módulo Banco de jogos)
+const SEED_JOGOS = [
+  {nome:"Super pares",areas:["Percepção visuoespacial","Atenção sustentada","Coordenação motora fina","Memória de trabalho","Velocidade de processamento"],min:6,max:null,obs:"Percepção, concentração, coordenação motora, memória e agilidade."},
+  {nome:"Suspeito",areas:["Percepção visuoespacial","Atenção sustentada","Raciocínio lógico","Linguagem / vocabulário"],min:7,max:null,obs:"Raciocínio, percepção, atenção, comunicação, criatividade e tomada de decisão ."},
+  {nome:"Comendo bem",areas:["Percepção visuoespacial","Atenção sustentada","Velocidade de processamento","Categorização"],min:6,max:null,obs:"Incentiva a indentificação e reconhecimento de alimentos, percepção, atenção e agilidade."},
+  {nome:"Resta 1",areas:["Atenção sustentada","Coordenação motora fina","Memória de trabalho","Raciocínio lógico","Planejamento","Organização","Tolerância à frustração"],min:5,max:null,obs:"Raciocínio lógico, atenção, concentração, coordenação motora, antecipação, persistência, planejamento, organização e memória."},
+  {nome:"Tá na mala",areas:["Percepção visuoespacial","Atenção sustentada","Coordenação motora fina","Raciocínio lógico"],min:6,max:null,obs:"Coordenação motora, raciocínio lógico, concentração, criatividade, imaginação, noção espacial, percepção de cores e formas."},
+  {nome:"Dominó",areas:["Atenção sustentada","Raciocínio lógico"],min:3,max:null,obs:"Raciocínio lógico, atenção e concentração."},
+  {nome:"Torre inteligente",areas:["Atenção seletiva","Atenção sustentada","Coordenação motora fina"],min:4,max:null,obs:"Observação, coordenação motora, atenção, e concentração."},
+  {nome:"Pega varetas",areas:["Percepção visuoespacial","Atenção sustentada","Coordenação motora fina","Velocidade de processamento","Raciocínio lógico","Controle inibitório","Tolerância à frustração"],min:6,max:null,obs:"Estimular a coordenação motora, concentração, agilidade, percepção visual, paciência, resolução de problemas e a tolerância à frustração."},
+  {nome:"Jogo da Velha",areas:["Atenção sustentada","Raciocínio lógico","Planejamento"],min:4,max:null,obs:"Raciocínio lógico, atenção e planejamento estratégico"},
+  {nome:"Desafio do equilíbrio",areas:["Atenção sustentada","Coordenação motora fina","Planejamento"],min:5,max:null,obs:"Coodernação motora, concentração e  planejamento."},
+  {nome:"Quebra cabeça de madeira animais",areas:["Percepção visuoespacial","Memória de trabalho","Raciocínio lógico"],min:3,max:null,obs:"Raciocínio lógico, resolução de problemas, memória e habilidades visuais-espaciais."},
+  {nome:"Puxa espinho",areas:["Atenção sustentada","Coordenação motora fina","Controle inibitório","Tolerância à frustração"],min:5,max:null,obs:"Coordenação motora, concentração, a paciência e a tolerância à frustração."},
+  {nome:"Puxa vareta flic",areas:["Atenção sustentada","Coordenação motora fina","Raciocínio lógico","Controle inibitório","Tolerância à frustração"],min:5,max:null,obs:"Coordenação motora, concentração, paciência, resolução de problemas e tolerância à frustração."},
+  {nome:"Kit médico/dentista",areas:["Habilidades sociais"],min:2,max:null,obs:"Imaginação, habilidades cognitivas e sociais e conhecimento do próprio corpo."},
+  {nome:"Fantoches",areas:["Atenção seletiva"],min:2,max:null,obs:"Habilidades de observação, expressão, transmitir e receber informações."},
+  {nome:"Tinta",areas:["Coordenação motora fina"],min:2,max:null,obs:"Expressão, coordenação motora, criatividade e imaginação."},
+  {nome:"Massinha/moldes massinha",areas:["Coordenação motora fina"],min:2,max:null,obs:"Expressão, coordenação motora, criatividade e imaginação."},
+  {nome:"Jogo do balão",areas:["Atenção sustentada","Memória de trabalho","Tolerância à frustração"],min:3,max:null,obs:"atençao, memória de longo prazo  e frustração."},
+  {nome:"Uno",areas:["Atenção sustentada","Raciocínio lógico","Planejamento","Tolerância à frustração","Categorização"],min:7,max:null,obs:"Raciocínio, atenção, tolerância a frustração, planejamento e reconhecimento de cores e números."},
+  {nome:"Eu vi- encanto",areas:["Percepção visuoespacial","Atenção sustentada","Velocidade de processamento","Raciocínio lógico"],min:4,max:null,obs:"Atenção, raciocínio, agilidade, percepção, Interação e tomada de derisão."},
+  {nome:"Doble",areas:["Percepção visuoespacial","Atenção sustentada","Memória de trabalho","Velocidade de processamento"],min:6,max:null,obs:"Atenção, percepção, memória, concentração e agilidade."},
+  {nome:"Color addict",areas:["Velocidade de processamento","Raciocínio lógico","Planejamento","Controle inibitório","Habilidades sociais"],min:7,max:null,obs:"Paciência, pensamento estratégico, habilidade social, raciocínio lógico, agilidade, reversibilidade de pensamento."},
+  {nome:"Quem foi?",areas:["Atenção sustentada","Velocidade de processamento","Raciocínio lógico"],min:6,max:null,obs:"Raciocínio lógico, concentração , pensamento, criatividade e agilidade."},
+  {nome:"Cartas- Exercícios com interjeições",areas:["Linguagem / vocabulário","Habilidades sociais"],min:6,max:null,obs:"Estimula o desenvolvimento da linguagem e o desempenho de competências sociais."},
+  {nome:"Cartas- ansiedade infantil",areas:["Regulação emocional"],min:6,max:null,obs:"Psicoeducação sobre os principais sintomas, dificuldades e comportamentos disfuncionais. Por meio das cartas pode-se monitorar os sintomas do paciente, com objetivo de auxiliar o mesmo a lidar a ansiedade."},
+  {nome:"Story cubes",areas:["Raciocínio lógico","Linguagem / vocabulário"],min:3,max:null,obs:"auxilia no desenvolvimento da criatividade, imaginação, comunicação, oralidade e raciocínio"},
+  {nome:"Bonecos divertidamente/das emoções",areas:["Regulação emocional"],min:2,max:null,obs:"Ajudam a compreeender as emoções e expressá-las"},
+  {nome:"Família de gatinhos expressão",areas:["Habilidades sociais","Regulação emocional"],min:3,max:null,obs:"Criatividade, habilidades sociais, compreensão das emoções e expressão."},
+  {nome:"Bingo das palavras",areas:["Percepção visuoespacial","Atenção sustentada","Memória de trabalho","Raciocínio lógico","Linguagem / vocabulário"],min:5,max:null,obs:"Alfabetização, memória, atenção, leitura, percepção e raciocínio."},
+  {nome:"Puxa batatinha",areas:["Atenção sustentada","Raciocínio lógico","Tolerância à frustração"],min:5,max:null,obs:"Raciocínio, Atenção e tolerância a frustração."},
+  {nome:"Quebra cabeça arca de Noé",areas:["Percepção visuoespacial","Memória de trabalho","Raciocínio lógico"],min:4,max:null,obs:"Raciocínio lógico, resolução de problemas, memória e habilidades visuais-espaciais."},
+  {nome:"Jogo da memória animais",areas:["Atenção sustentada","Memória de trabalho","Raciocínio lógico"],min:3,max:null,obs:"Memória, concentração, raciocinio e resolução de problemas."},
+  {nome:"Hora da feira",areas:["Linguagem / vocabulário"],min:4,max:null,obs:"Jogo colaborativo, que desenvolve habilidades como: entendimento de regras, linguagem e comunicação, criatividade e familiarização com os alimentos."},
+  {nome:"Jogo da memória animais divertidos",areas:["Atenção sustentada","Memória de trabalho","Raciocínio lógico"],min:4,max:null,obs:"Memória, concentração, raciocinio e resolução de problemas."},
+  {nome:"Jogo da memória boi de mamão",areas:["Atenção sustentada","Memória de trabalho","Raciocínio lógico"],min:3,max:null,obs:"Memória, concentração, raciocinio e resolução de problemas."},
+  {nome:"Brincando de engenheiro",areas:["Coordenação motora fina","Raciocínio lógico"],min:3,max:null,obs:"Desenvolvimento do pensamento lógico e auxilia nas noções de espaço e coordenação motora"},
+  {nome:"Livro o luto ê um elefante",areas:["Regulação emocional"],min:6,max:null,obs:"Trabalha o Luto e mostra que com o passar do tempo ele se transforma, fica cada vez menor, cada vez menos sufocante, iluminando a noite mais escura e nos ajudando a trilhar nosso caminho, em¬balados pelo amor e pelas lembranças."},
+  {nome:"Livro eu sou a morte",areas:["Regulação emocional"],min:2,max:null,obs:"Participação da morte no ciclo da vida e suas responsabilidades para garantir que o mundo evolua como deve."},
+  {nome:"Livro eu sou a vida",areas:["Linguagem / vocabulário"],min:2,max:null,obs:"Fala sobre ciclos naturais e nos ajuda a discutir temas muitas vezes difíceis de serem abordados, como a solidão, a amizade e as diferenças."},
+  {nome:"Livro pippo e fifi",areas:[],min:3,max:null,obs:"Explica conceitos básicos sobre o corpo, ensinando a diferenciar toques de amor de toques abusivos. Apontando caminhos para o diálogo, proteção e ajuda."},
+  {nome:"Livro o livro da raiva para crianças",areas:["Regulação emocional"],min:3,max:null,obs:"Auxiliar as crianças a manejar emoções -, ajudá-las a lidar com a raiva e outros sentimentos difíceis, a conviver com outras pessoas e a se expressar de maneira saudável"},
+  {nome:"Livros vamos lidar com a hiperatividade e o déficit de atenção",areas:["Atenção sustentada","Planejamento"],min:7,max:null,obs:"Estratégias e intervenções práticas para lidar com crianças que apresentam Transtorno de Déficit de Atenção e Hiperatividade"},
+  {nome:"Material Cérebro e os estudos",areas:[],min:3,max:null,obs:"Material para auxiliar os estudos."},
+  {nome:"Pensamentos Disfuncionais",areas:[],min:3,max:null,obs:"O que são e como lidar com os pensamentos disfuncionais."},
+  {nome:"TDAH",areas:["Atenção sustentada"],min:3,max:null,obs:"Explicação e atividades lúdicas sobre o TDAH e como ele funciona, ensinando a entender como ele se relaciona com as qualidades e questões a melhorar da criança."},
+  {nome:"Lidando com a Frustração",areas:["Tolerância à frustração"],min:3,max:null,obs:"Material curto para trabalhar sobre a frustração."},
+  {nome:"Roda da Vida",areas:[],min:3,max:null,obs:"Observar a satisfação com diferentes áreas da vida (relacionamentos, escola, vida pessoal e qualidade de vida)"},
+  {nome:"Jogo das emoções",areas:["Regulação emocional"],min:3,max:null,obs:"Tabuleiro para estimular a expressão e conversas sobre as emoções."},
+  {nome:"Jogo dos Palitos",areas:["Percepção visuoespacial","Atenção sustentada","Organização"],min:3,max:null,obs:"Cartas com diferentes disposições de palitos coloridos, trabalhando a concentração, percepção, coordenação, organização e nomeação das cores."},
+  {nome:"Higiene do sono",areas:[],min:3,max:null,obs:"O que é, seus facilitadores e dificultadores."},
+  {nome:"Hábitos da Noite",areas:[],min:3,max:null,obs:"Controle da qualidade do sono, se procurou auxílio durante a noite, o que fez quando acordou durante a noite e como se sentiu antes de dormir."},
+  {nome:"Guia Ansiedade",areas:["Regulação emocional"],min:3,max:null,obs:"Guia prático para momentos de ansiedade."},
+  {nome:"Flashcards - Lidando com a ansiedade",areas:["Regulação emocional"],min:3,max:null,obs:"Como lidar com a ansiedade (aceite, contemple, aja, libere, examine, espere, mantenha e sorria)"},
+  {nome:"Diário das Emoções Divertidamente",areas:["Regulação emocional"],min:3,max:null,obs:"Breve explicacao sobre as emoções e espaço para preencher como se sentiu no dia e desenhar ou escrever o que aconteceu."},
+  {nome:"Instruções a respeito da psicoterapia",areas:["Raciocínio lógico"],min:3,max:null,obs:"Como funciona o acompanhamento psicológico."},
+  {nome:"Atividades Emoções",areas:["Regulação emocional"],min:3,max:null,obs:"Atividades para o conhecimento das emoções básicas."},
+  {nome:"Atividades Emoções Simplificada",areas:["Regulação emocional"],min:3,max:null,obs:"Atividades para o conhecimento das emoções básicas."},
+  {nome:"Diário das Brigas",areas:[],min:3,max:null,obs:"Atividade para descrever a situação, como se sentiu, o que fez e o que poderia ser feito diante da briga."},
+  {nome:"Diário Da Mudança",areas:[],min:3,max:null,obs:"Atividades para trabalhar a mudança de casa."},
+  {nome:"Crescer",areas:[],min:3,max:null,obs:"Atividades e reflexão lúdica sobre o amadurecimento."},
+  {nome:"Comunicação Assertiva",areas:["Linguagem / vocabulário"],min:3,max:null,obs:"Diferentes tipos de comunicação, o que precisamos desenvolver para ter uma comunicação assertiva, como podemos colocá-la em prática e como a escuta também e importante."},
+  {nome:"Como trabalhar a organização",areas:["Planejamento","Organização"],min:3,max:null,obs:"Dicas de organização, estratégias e planner semanal, diário e controle de hábitos"},
+  {nome:"Cartões de vermelho e amarelo",areas:[],min:3,max:null,obs:"Cartões para trabalhar regras e combinados."},
+  {nome:"Cards e Termômetro sobre a Raiva",areas:["Categorização","Regulação emocional"],min:3,max:null,obs:"Alternativas de como lidar com a raiva e termômetro para auxiliar na identificação da emoção."},
+  {nome:"Tabela de Comunicação Alternativa",areas:["Linguagem / vocabulário"],min:3,max:null,obs:"Recurso que serve para ampliar a capacidade de comunicação de pessoas com dificuldade de fala ou escrita."},
+  {nome:"Álbum de aventura",areas:["Atenção seletiva"],min:3,max:null,obs:"Atividades para estimular a exploração, observação e curiosidade."},
+  {nome:"Psicoeducação das Emoções",areas:["Regulação emocional"],min:3,max:null,obs:"Explicação sobre as emoções, sintomas no corpo, para que servem, intensidade e atividades."},
+  {nome:"Material Raiva",areas:["Regulação emocional"],min:3,max:null,obs:"Breve historia com atividades e explicações sobre a raiva."},
+  {nome:"Jogo de Perguntas",areas:["Linguagem / vocabulário"],min:3,max:null,obs:"Estimula a comunicação, proporciona um tempo de qualidade e auxilia no fortalecimento de laços."},
+  {nome:"Caça palavras das emoções",areas:["Regulação emocional"],min:3,max:null,obs:"Ajuda a compreender e refletir sobre as emoções de maneira lúdica e interativa."},
+  {nome:"Como é sua ansiedade",areas:["Regulação emocional"],min:3,max:null,obs:"Material que trabalha como a criança percebe sua ansiedade."},
+  {nome:"História: Clara e o poder da imaginação",areas:["Regulação emocional"],min:3,max:null,obs:"Trabalha sobre o medo e a imaginação."},
+  {nome:"Jogo do reconhecimento",areas:["Categorização"],min:3,max:null,obs:"Identificar as cartas representando as principais características da mãe e explicar o porquê às escolheu."},
+  {nome:"Jogo da memória",areas:["Percepção visuoespacial","Atenção seletiva","Atenção sustentada","Memória de trabalho","Raciocínio lógico"],min:3,max:null,obs:"Concentração, observação, memória, raciocínio lógico e auxilia no desenvolvimento da localização espacial e da lateralidade."},
+  {nome:"Como conversar com meu filho adolescente",areas:["Linguagem / vocabulário"],min:3,max:null,obs:"Sobre a adolescência e dicas de como estabelecer uma comunicação aberta e equilibrada."},
+  {nome:"Identifique as emoções",areas:["Regulação emocional"],min:3,max:null,obs:"Auxilia a criança a reconhecer e compreender as próprias emoções, através da atividade de identificar as emoções e relaciona-las com as situações."},
+  {nome:"Diário das Emoções",areas:["Regulação emocional"],min:3,max:null,obs:"Breve explicacao sobre as emoções e espaço para desenhar a emoção que sentiu no dia."},
+  {nome:"História: O Coelhinho da Páscoa e as Emoções",areas:["Regulação emocional"],min:3,max:null,obs:"Historia do coelhinho da Páscoa que reflete sobre como devemos aceitar todas as emoções e permitir sentir e expressá-las."},
+  {nome:"Reflexões para Pais",areas:[],min:3,max:null,obs:"Material criado para a construção de reflexões e tomada de consciência, destinado a análise de valores, atitudes e comportamentos e até que ponto eles fazem sentido e são coerentes com seus objetivos."},
+  {nome:"Tapa Certo",areas:["Atenção sustentada","Coordenação motora fina","Velocidade de processamento","Flexibilidade cognitiva","Controle inibitório","Categorização"],min:5,max:null,obs:"Estimular atenção, velocidade de processamento, coordenação motora, controle inibitório e flexibilidade cognitiva por meio da identificação rápida de estímulos e respostas adequadas."},
+  {nome:"Monica Baby da Turma da Monica",areas:[],min:3,max:null,obs:"Construção imaginativa e alimentação."},
+  {nome:"Porquinho Comilão",areas:["Atenção sustentada","Coordenação motora fina","Planejamento","Tolerância à frustração","Regulação emocional"],min:4,max:null,obs:"Estimular coordenação motora fina, coordenação óculo-manual, atenção, planejamento motor e controle da ansiedade, frustração e da força durante a manipulação dos alimentos do jogo."},
+  {nome:"Quebra-cabeça Big Fofossauros",areas:["Percepção visuoespacial","Memória de trabalho","Raciocínio lógico"],min:4,max:null,obs:"Raciocínio lógico, resolução de problemas, memória e habilidades visuais-espaciais."},
+  {nome:"Era uma vez (peças de madeira)",areas:["Raciocínio lógico","Regulação emocional"],min:2,max:null,obs:"Estimular a criação de sequencia lógica da história, imaginação, projeção de sentimentos próprios."},
+  {nome:"Deixe em pé (peças de madeira)",areas:["Coordenação motora fina","Planejamento","Tolerância à frustração"],min:4,max:null,obs:"Pensamento estratégico, coordenação motora fina, tolerancia à frustração."},
+  {nome:"Cara a cara",areas:["Atenção sustentada","Memória de trabalho","Raciocínio lógico","Linguagem / vocabulário","Habilidades sociais"],min:6,max:null,obs:"Estimular atenção, raciocínio lógico, linguagem e comunição, formulação de perguntas, memória e habilidades sociais."},
+  {nome:"Exploding Kittens",areas:["Atenção sustentada","Memória de trabalho","Planejamento","Flexibilidade cognitiva","Controle inibitório","Tolerância à frustração"],min:8,max:null,obs:"Estimular planejamento, estretégias, atenção, memória de trabalho, flexibilidade cognitiva, controle inibitório e tolerância à frustração."},
+  {nome:"Pixar",areas:["Percepção visuoespacial","Atenção sustentada","Velocidade de processamento","Flexibilidade cognitiva","Categorização"],min:4,max:null,obs:"Estimular atenção, percepção visual, velocidade de processamento, coordenação óculo-manual e flexibilidade cognitiva por meio da identificação rápida de estímulos visuais."},
+  {nome:"Arremedo",areas:["Regulação emocional"],min:6,max:null,obs:"Enfrentamento de medos e fobias."},
+  {nome:"Cai não cai",areas:["Atenção sustentada","Coordenação motora fina","Planejamento","Controle inibitório","Tolerância à frustração"],min:5,max:null,obs:"Estimular coordenação motora fina, planejamento motor, atenção, controle da força, controle inibitório, paciencia e tolerância à frustração."},
+  {nome:"Baralho",areas:["Atenção sustentada","Memória de trabalho","Raciocínio lógico","Planejamento","Flexibilidade cognitiva"],min:8,max:null,obs:"Estimular atenção, planejamento, memória de trabalho, raciocínio lógico, flexibilidade cognitiva e habilidades."},
+  {nome:"Uno Flip",areas:["Atenção sustentada","Planejamento","Flexibilidade cognitiva","Controle inibitório","Regulação emocional"],min:7,max:null,obs:"Estimular atenção sustentada, flexibilidade cognitiva, controle inibitório, planejamento e regulação emocional."},
+  {nome:"Comidinhas de madeira em velcro",areas:[],min:3,max:null,obs:"Estimular o lúdico, a imaginação e a alimentação saudável."},
+  {nome:"Rope Challenge",areas:["Atenção sustentada","Coordenação motora fina","Planejamento"],min:6,max:null,obs:"Estimular coordenação motora, planejamento e atenção."},
+  {nome:"Hash Toy",areas:["Atenção seletiva","Raciocínio lógico"],min:4,max:null,obs:"Observação e raciocínio, a fim de trabalhar distrações e frustrações."},
+  {nome:"Vamos Respirar com os animais",areas:["Percepção visuoespacial","Regulação emocional"],min:3,max:null,obs:"Técnicas de respiração e autopercepção, podendo ser utilizado para controle da ansiedade."},
+  {nome:"Emoções",areas:["Regulação emocional"],min:5,max:null,obs:"Identificar as emoções em si e nos outros, com atividades manuais."},
+  {nome:"Quebrando o código",areas:["Atenção sustentada","Memória de trabalho","Raciocínio lógico","Planejamento","Flexibilidade cognitiva"],min:8,max:null,obs:"Estimular o raciocínio lógico, pensamento dedutivo, planejamento, memória de trabalho, atenção e flexibilidade cognitiva."},
+  {nome:"Academia de ginástica cerebral para crianças",areas:[],min:6,max:null,obs:"Desenvolver habilidades cognitvas, emocionais e comportamentais, focado no processo educacional."},
+  {nome:"Eu vi! (Stitch)",areas:["Percepção visuoespacial","Atenção sustentada","Velocidade de processamento","Flexibilidade cognitiva","Categorização"],min:4,max:null,obs:"Estimular atenção, percepção visual, velocidade de processamento, coordenação óculo-manual e flexibilidade cognitiva por meio da identificação rápida de estímulos visuais."},
+  {nome:"Pensamentos e emoções",areas:["Linguagem / vocabulário","Regulação emocional"],min:7,max:null,obs:"Estimular através de relato verbal, os pensamentos e emoções."},
+  {nome:"Encaixe se for capaz",areas:["Percepção visuoespacial","Atenção sustentada","Coordenação motora fina","Planejamento"],min:7,max:null,obs:"Estimular coordenação motora fina, planejamento motor, atenção, concentração e percepção espacial."},
+  {nome:"Dig In!",areas:["Percepção visuoespacial","Atenção sustentada","Velocidade de processamento","Flexibilidade cognitiva","Categorização"],min:8,max:null,obs:"Estimular atenção, percepção visual, velocidade de processamento, coordenação óculo-manual e flexibilidade cognitiva por meio da identificação rápida de estímulos visuais."},
+  {nome:"Perfil",areas:["Atenção sustentada","Memória de trabalho","Raciocínio lógico","Linguagem / vocabulário","Habilidades sociais"],min:7,max:null,obs:"Estimular atenção, raciocínio dedutivo, linguagem e habilidades sociais, memória e análise de pistas."},
+  {nome:"Hora do rush",areas:["Atenção sustentada","Raciocínio lógico"],min:6,max:null,obs:"Estimular a concentração e raciocínio lógico."},
+  {nome:"Tartaruguinha Mosaico",areas:["Atenção sustentada","Raciocínio lógico"],min:3,max:null,obs:"Estimular a imaginação, racicionio lógico, atenção e concentração."},
+  {nome:"Eu sou?",areas:["Raciocínio lógico","Linguagem / vocabulário","Habilidades sociais"],min:6,max:null,obs:"Estimular o raciocínio dedutivo, linguagem e habilidades sociais e análise de pistas."},
+  {nome:"Socialize-se!",areas:["Habilidades sociais"],min:5,max:null,obs:"Aprimorar as habilidades sociais."},
+  {nome:"Hamburgueria maluca",areas:["Percepção visuoespacial","Organização","Tolerância à frustração"],min:5,max:null,obs:"Favorecer a organização, percepção visual e tolerancia à frustração."},
+  {nome:"O chão é lava",areas:["Percepção visuoespacial","Atenção sustentada","Coordenação motora fina","Planejamento","Flexibilidade cognitiva","Tolerância à frustração"],min:4,max:null,obs:"Estimular coordenação motora, equilíbrio, planejamento, atenção, percepção corporal, flexibilidade cognitiva e tolerancia à frustração."},
+  {nome:"Quebra-cabeça animais da Amazonia",areas:["Percepção visuoespacial","Memória de trabalho","Raciocínio lógico"],min:4,max:null,obs:"Raciocínio lógico, resolução de problemas, memória e habilidades visuais-espaciais."},
+  {nome:"Castelo das emoções",areas:["Raciocínio lógico","Linguagem / vocabulário","Habilidades sociais","Regulação emocional"],min:6,max:null,obs:"Aprender a lidar com as emoções, raciocínio, resolução, habilidades de comunicação e socialização."},
+  {nome:"Alinhavo",areas:["Coordenação motora fina","Raciocínio lógico"],min:3,max:null,obs:"Estimular a coordenação motora fina e o raciocínio lógico."},
+  {nome:"Hamburguer de madeira",areas:["Raciocínio lógico","Planejamento","Linguagem / vocabulário","Habilidades sociais"],min:5,max:null,obs:"Estimular a criatividade, planejamento, raciocínio matemático e habilidades sociais e de comunicação."},
+  {nome:"Quem quer pizza?",areas:["Memória de trabalho","Velocidade de processamento","Planejamento"],min:6,max:null,obs:"Estimular a memória, agilidade e planejamento."},
+  {nome:"O incrível mundo do Gildo",areas:[],min:2,max:null,obs:"Reflexão sobre identidade, diferenças e autoestima."},
+  {nome:"A ursinha que não queria dormir sozinha",areas:[],min:2,max:null,obs:"Reflexão sobre autonomia, dormir sozinho(a) e relações familiares."},
+  {nome:"O luto é um elefante",areas:["Regulação emocional"],min:2,max:null,obs:"Reflexão sobre o processo de luto."},
+  {nome:"Monstro rosa",areas:["Habilidades sociais"],min:2,max:null,obs:"Reflexão sobre diversidade e convivio social."},
+  {nome:"Tem um tigre no trem",areas:[],min:2,max:null,obs:"Reflexão sobre o poder da imaginação e fantasia infantil e das relações familiares atuais com a tecnologia."},
+  {nome:"Monstro azul",areas:["Habilidades sociais","Teoria da mente"],min:2,max:null,obs:"Reflexão sobre respeito, empatia, convivio social e escuta."}
+];
+
+/* ============================ ESTADO ============================ */
+let sb = null;
+const state = {
+  user:null, loading:false, erro:null, authMode:"login", authBusy:false, authEmail:"",
+  view:"planejar",
+  jogos:[], pacientes:[], sessoes:[],
+  pid:"", sessao:[], objetivo:"", nota:"", busca:"", filtroPac:"todos",
+  dataSessao:"", evoPid:"",
+  gcal:{connected:false,token:null,events:[],loading:false,erro:null},
+  ai:{loading:false,result:null,error:null}
+};
+
+/* ============================ HELPERS ============================ */
+const esc = s => String(s??"").replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const $ = sel => document.querySelector(sel);
+const app = () => document.getElementById("app");
+const isPlaceholder = () => SUPABASE_URL.includes("SEU-PROJETO") || SUPABASE_ANON_KEY.includes("SUA-CHAVE");
+function hoje(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function fmtData(iso){if(!iso)return'';const p=String(iso).split('-');return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:iso}
+function toast(msg,err){document.querySelectorAll('.toast').forEach(t=>t.remove());const t=document.createElement('div');t.className='toast'+(err?' err':'');t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),3200)}
+const iniciaisDe = nome => {const p=String(nome||'').trim().split(/\s+/).filter(Boolean);if(!p.length)return '—';return (p[0][0]+(p.length>1?p[p.length-1][0]:'')).toUpperCase();};
+
+// chave da IA (fica no navegador, por dispositivo)
+const KKEY="ludica_api_key", MKEY="ludica_model";
+function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+
+// mapeamento banco <-> app
+const jogoFromRow = r => ({id:r.id,nome:r.nome,areas:r.areas||[],min:r.idade_min,max:r.idade_max,obs:r.obs||''});
+const pacFromRow  = r => ({id:r.id,iniciais:r.iniciais,idade:r.idade,demandas:r.demandas||[],obs:r.obs||''});
+const sessFromRow = r => ({id:r.id,pid:r.paciente_id,ts:new Date(r.created_at).getTime(),data:r.data,objetivo:r.objetivo||'',nota:r.nota||'',status:r.status,jogos:r.jogos||[]});
+
+function targetAreas(p){const s=new Set();(p?.demandas||[]).forEach(d=>{const f=DEMANDAS.find(x=>x.nome===d);if(f)f.areas.forEach(a=>s.add(a))});return[...s]}
+function sugestoes(p){
+  if(!p)return[];const alvo=targetAreas(p);
+  return state.jogos.filter(g=>p.idade>=g.min).map(g=>{
+    const hits=g.areas.filter(a=>alvo.includes(a));return{...g,hits,score:hits.length};
+  }).filter(g=>g.score>0).sort((a,b)=>b.score-a.score);
+}
+function sessoesDoPaciente(pid){return state.sessoes.filter(s=>s.pid===pid).sort((a,b)=>b.ts-a.ts)}
+function ultimaSessao(pid){return sessoesDoPaciente(pid)[0]||null}
+function usoPorJogo(pid){
+  // retorna Map: id_do_jogo -> {count, ultima: 'YYYY-MM-DD', reacoes:[...]}
+  const map=new Map();
+  sessoesDoPaciente(pid).forEach(s=>s.jogos.forEach(j=>{
+    const cur=map.get(j.id)||{count:0,ultima:null,reacoes:[]};
+    cur.count++; if(!cur.ultima||s.data>cur.ultima)cur.ultima=s.data;
+    if(j.reacao&&j.reacao.trim())cur.reacoes.push(j.reacao.trim());
+    map.set(j.id,cur);
+  }));
+  return map;
+}
+function usoPorNome(pid){
+  // igual acima mas indexado por nome (pra casar com sugestões da IA, que só retornam nome)
+  const map=new Map();
+  usoPorJogo(pid).forEach((info,id)=>{const g=state.jogos.find(x=>x.id===id);if(g)map.set(g.nome,info)});
+  return map;
+}
+
+/* ============================ SUPABASE / AUTH ============================ */
+async function boot(){
+  if(isPlaceholder()){render();return}
+  if(typeof supabase==="undefined"){state.erro="Não consegui carregar a biblioteca do Supabase (sem internet?).";render();return}
+  try{ const {createClient}=supabase; sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY); }
+  catch(e){ state.erro="Falha ao iniciar o Supabase: "+e.message; render(); return; }
+  const {data:{session}}=await sb.auth.getSession();
+  state.user=session?.user||null;
+  if(state.user){ await carregarTudo(); } else { render(); }
+}
+async function carregarTudo(){
+  state.loading=true; render();
+  try{
+    const [j,p,s]=await Promise.all([
+      sb.from('jogos').select('*').order('nome'),
+      sb.from('pacientes').select('*').order('iniciais'),
+      sb.from('sessoes').select('*').order('created_at',{ascending:false})
+    ]);
+    if(j.error||p.error||s.error) throw (j.error||p.error||s.error);
+    state.jogos=(j.data||[]).map(jogoFromRow);
+    state.pacientes=(p.data||[]).map(pacFromRow);
+    state.sessoes=(s.data||[]).map(sessFromRow);
+    if(!state.pacientes.find(x=>x.id===state.pid)) state.pid=state.pacientes[0]?.id||"";
+    state.loading=false; render();
+  }catch(e){ state.loading=false; toast("Erro ao carregar: "+(e.message||e),true); render(); }
+}
+async function entrar(email,senha){
+  state.authBusy=true;render();
+  const {error}=await sb.auth.signInWithPassword({email,password:senha});
+  state.authBusy=false;
+  if(error){toast(error.message,true);render();return}
+  const {data:{session}}=await sb.auth.getSession();
+  state.user=session?.user||null;
+  await carregarTudo();
+}
+async function criarConta(email,senha,nome){
+  state.authBusy=true;render();
+  const {data,error}=await sb.auth.signUp({email,password:senha,options:{data:{nome:nome||email.split('@')[0]}}});
+  state.authBusy=false;
+  if(error){toast(error.message,true);render();return}
+  if(data.session){ state.user=data.session.user; await carregarTudo(); }
+  else { toast("Conta criada! Confirme pelo e-mail e depois entre.");state.authMode="login";render(); }
+}
+async function sair(){ await sb.auth.signOut(); state.user=null; state.jogos=[];state.pacientes=[];state.sessoes=[];state.sessao=[]; render(); }
+
+/* ============================ CRUD ============================ */
+async function salvarPaciente(f){
+  const payload={iniciais:f.iniciais,idade:f.idade,demandas:f.demandas,obs:f.obs};
+  if(f.id){
+    const {data,error}=await sb.from('pacientes').update(payload).eq('id',f.id).select().single();
+    if(error)return toast(error.message,true);
+    state.pacientes=state.pacientes.map(x=>x.id===f.id?pacFromRow(data):x);
+  }else{
+    const {data,error}=await sb.from('pacientes').insert({...payload,user_id:state.user.id}).select().single();
+    if(error)return toast(error.message,true);
+    state.pacientes=[...state.pacientes,pacFromRow(data)].sort((a,b)=>a.iniciais.localeCompare(b.iniciais));
+    if(!state.pid)state.pid=data.id;
+  }
+  closeModal();render();
+}
+async function excluirPaciente(id){
+  const {error}=await sb.from('pacientes').delete().eq('id',id);
+  if(error)return toast(error.message,true);
+  state.pacientes=state.pacientes.filter(x=>x.id!==id);
+  if(state.pid===id)state.pid=state.pacientes[0]?.id||"";
+  render();
+}
+async function salvarJogo(f){
+  const payload={nome:f.nome,areas:f.areas,idade_min:f.min,idade_max:f.max,obs:f.obs};
+  if(f.id){
+    const {data,error}=await sb.from('jogos').update(payload).eq('id',f.id).select().single();
+    if(error)return toast(error.message,true);
+    state.jogos=state.jogos.map(x=>x.id===f.id?jogoFromRow(data):x);
+  }else{
+    const {data,error}=await sb.from('jogos').insert({...payload,user_id:state.user.id}).select().single();
+    if(error)return toast(error.message,true);
+    state.jogos=[...state.jogos,jogoFromRow(data)].sort((a,b)=>a.nome.localeCompare(b.nome));
+  }
+  closeModal();render();
+}
+async function excluirJogo(id){
+  const {error}=await sb.from('jogos').delete().eq('id',id);
+  if(error)return toast(error.message,true);
+  state.jogos=state.jogos.filter(x=>x.id!==id);render();
+}
+async function popularExemplos(){
+  const existentes=new Set(state.jogos.map(g=>g.nome));
+  const faltantes=SEED_JOGOS.filter(g=>!existentes.has(g.nome));
+  if(!faltantes.length){toast("Todos os jogos já estão no banco.");return}
+  const rows=faltantes.map(g=>({user_id:state.user.id,nome:g.nome,areas:g.areas,idade_min:g.min,idade_max:g.max,obs:g.obs}));
+  let inseridos=0;
+  for(let i=0;i<rows.length;i+=25){
+    const chunk=rows.slice(i,i+25);
+    const {data,error}=await sb.from('jogos').insert(chunk).select();
+    if(error){toast("Parou em "+inseridos+" — "+error.message,true);break}
+    state.jogos=[...state.jogos,...data.map(jogoFromRow)];
+    inseridos+=data.length;render();
+  }
+  state.jogos.sort((a,b)=>a.nome.localeCompare(b.nome));
+  toast(inseridos+" jogo(s) adicionados. Total no banco: "+state.jogos.length);render();
+}
+async function salvarSessao(){
+  const p=state.pacientes.find(x=>x.id===state.pid); if(!p||!state.sessao.length)return;
+  const jogos=state.sessao.map(id=>{const g=state.jogos.find(x=>x.id===id);return{id,nome:g?g.nome:'',reacao:''}});
+  const {data,error}=await sb.from('sessoes').insert({user_id:state.user.id,paciente_id:p.id,data:state.dataSessao||hoje(),objetivo:state.objetivo,nota:state.nota,status:'planejada',jogos}).select().single();
+  if(error)return toast(error.message,true);
+  const s=sessFromRow(data);
+  state.sessoes=[s,...state.sessoes];
+  state.sessao=[];state.objetivo="";state.nota="";state.dataSessao="";
+  render(); modalSessao(s.id);
+}
+async function excluirSessao(id){
+  const {error}=await sb.from('sessoes').delete().eq('id',id);
+  if(error)return toast(error.message,true);
+  state.sessoes=state.sessoes.filter(x=>x.id!==id);closeModal();render();
+}
+
+/* ============================ ÍCONES ============================ */
+const ICON_SVG=`<svg viewBox="0 0 6547.78 4287.44" style="width:32px;height:auto;display:block" aria-hidden="true"><path fill="var(--terra)" d="Camada_2"/></svg>`;
+const LOGO_SVG=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4678.64 1368.03" aria-label="Lúdica">
+  
+  <g  >
+    <path fill="#4DA1A9" d="M590.47,232.1c0-6.85,4.7-19.7,14.14-38.55,9.42-18.83,20.76-38.33,34.05-58.47,13.27-20.12,26.99-38.11,41.12-53.97,14.14-15.84,25.48-23.77,34.05-23.77,7.71,0,16.26,1.93,25.7,5.78,9.42,3.86,18.41,8.57,26.99,14.14,8.55,5.58,15.84,11.79,21.84,18.63,5.98,6.87,8.99,12.85,8.99,17.99,0,7.71-6,20.56-17.99,38.55-12.01,17.99-26.56,36.2-43.69,54.61-17.15,18.43-34.69,34.92-52.68,49.47-17.99,14.58-33.41,21.84-46.26,21.84-12.01,0-22.71-5.14-32.12-15.42-9.44-10.28-14.14-20.56-14.14-30.84Z"/>
+    <path fill="#F4A261" d="M3747.54,206.41c47.97,0,89.09,11.56,123.36,34.69,34.25,23.13,62.32,54.83,84.17,95.09,21.84,40.27,38.11,87.18,48.83,140.7,10.7,53.55,16.06,111.15,16.06,172.83,0,54.83-6.22,106.23-18.63,154.2-12.43,47.98-31.06,89.94-55.9,125.93-24.86,35.98-56.54,64.25-95.09,84.81-38.55,20.56-83.97,30.84-136.21,30.84-20.56,0-38.35-1.71-53.33-5.14-15-3.41-27.2-5.14-36.62-5.14-6.87,0-12.21,1.93-16.06,5.78-3.85,3.85-5.78,10.92-5.78,21.2v208.17c0,27.42-5.78,50.54-17.35,69.39-11.56,18.83-28.49,28.27-50.76,28.27-12.01,0-23.99-1.09-35.98-3.21-12.01-2.15-22.93-5.58-32.77-10.28-9.86-4.72-17.79-11.37-23.77-19.92-6-8.57-9-19.27-9-32.12V364.46c0-19.7-3.21-36.82-9.64-51.4-6.43-14.56-13.07-27.41-19.92-38.55-5.14-7.71-5.36-16.26-.64-25.7,4.7-9.41,11.99-18.41,21.84-26.98,9.84-8.55,21.2-15.62,34.05-21.2,12.85-5.56,24.84-8.35,35.98-8.35,19.7,0,36.82,8.15,51.4,24.41,14.56,16.28,27.41,35.56,38.55,57.82,1.71,3.43,3.41,6.43,5.14,8.99,1.71,2.57,4.28,3.86,7.71,3.86,4.28,0,10.7-4.28,19.27-12.85,15.42-17.12,33.83-32.76,55.25-46.9,21.4-14.14,46.68-21.2,75.81-21.2ZM3855.47,647.15c0-33.41-1.93-67.02-5.78-100.87-3.85-33.83-10.72-64.45-20.56-91.88-9.86-27.41-22.49-49.89-37.91-67.46-15.42-17.55-34.69-26.34-57.82-26.34-15.42,0-30.84,5.14-46.26,15.42-15.42,10.28-29.56,23.35-42.41,39.19-12.85,15.86-23.35,34.05-31.48,54.61-8.15,20.56-12.21,41.12-12.21,61.68v290.41c0,29.13,5.98,49.47,17.99,61.03,11.99,11.56,38.11,17.35,78.38,17.35,24.84,0,47.1-6.2,66.82-18.63,19.7-12.41,36.4-29.76,50.11-52.04,13.69-22.27,23.97-49.03,30.84-80.31,6.85-31.26,10.28-65.31,10.28-102.15Z"/>
+    <path fill="#F4A261" d="M4406.23,206.41c47.97,0,89.09,11.56,123.36,34.69,34.25,23.13,62.32,54.83,84.17,95.09,21.84,40.27,38.11,87.18,48.83,140.7,10.7,53.55,16.06,111.15,16.06,172.83,0,54.83-6.22,106.23-18.63,154.2-12.43,47.98-31.06,89.94-55.9,125.93-24.86,35.98-56.54,64.25-95.09,84.81-38.55,20.56-83.97,30.84-136.21,30.84-20.56,0-38.35-1.71-53.33-5.14-15-3.41-27.2-5.14-36.62-5.14-6.87,0-12.21,1.93-16.06,5.78-3.85,3.85-5.78,10.92-5.78,21.2v208.17c0,27.42-5.78,50.54-17.35,69.39-11.56,18.83-28.49,28.27-50.76,28.27-12.01,0-23.99-1.09-35.98-3.21-12.01-2.15-22.93-5.58-32.77-10.28-9.86-4.72-17.79-11.37-23.77-19.92-6-8.57-9-19.27-9-32.12V364.46c0-19.7-3.21-36.82-9.64-51.4-6.43-14.56-13.07-27.41-19.92-38.55-5.14-7.71-5.36-16.26-.64-25.7,4.7-9.41,11.99-18.41,21.84-26.98,9.84-8.55,21.2-15.62,34.05-21.2,12.85-5.56,24.84-8.35,35.98-8.35,19.7,0,36.82,8.15,51.4,24.41,14.56,16.28,27.41,35.56,38.55,57.82,1.71,3.43,3.41,6.43,5.14,8.99,1.71,2.57,4.28,3.86,7.71,3.86,4.28,0,10.7-4.28,19.27-12.85,15.42-17.12,33.83-32.76,55.25-46.9,21.4-14.14,46.68-21.2,75.81-21.2ZM4514.16,647.15c0-33.41-1.93-67.02-5.78-100.87-3.85-33.83-10.72-64.45-20.56-91.88-9.86-27.41-22.49-49.89-37.91-67.46-15.42-17.55-34.69-26.34-57.82-26.34-15.42,0-30.84,5.14-46.26,15.42-15.42,10.28-29.56,23.35-42.41,39.19-12.85,15.86-23.35,34.05-31.48,54.61-8.15,20.56-12.21,41.12-12.21,61.68v290.41c0,29.13,5.98,49.47,17.99,61.03,11.99,11.56,38.11,17.35,78.38,17.35,24.84,0,47.1-6.2,66.82-18.63,19.7-12.41,36.4-29.76,50.11-52.04,13.69-22.27,23.97-49.03,30.84-80.31,6.85-31.26,10.28-65.31,10.28-102.15Z"/>
+    <path fill="#4DA1A9" d="M169.62,1064.77c0,22.29,4.28,33.41,12.85,33.41h100.23c14.56,0,25.9,2.37,34.05,7.07,8.13,4.72,14.14,11.14,17.99,19.27,3.85,8.15,6.42,17.57,7.71,28.27,1.29,10.72,1.93,21.64,1.93,32.77,0,19.72-3.86,36.62-11.56,50.76-7.71,14.14-24.41,21.2-50.12,21.2-35.14,0-71.76-.64-109.86-1.93-38.13-1.29-76.03-1.93-113.72-1.93-10.28,0-19.07-.86-26.34-2.57-7.29-1.73-13.29-5.78-17.99-12.21-4.72-6.42-8.35-15.64-10.92-27.63-2.57-11.99-3.85-27.83-3.85-47.54V133.16c0-14.56,2.57-26.76,7.71-36.62,5.14-9.84,11.98-17.77,20.56-23.77,8.55-5.98,18.41-10.06,29.55-12.21,11.12-2.13,22.69-3.21,34.69-3.21,24.84,0,44.75,4.72,59.75,14.14,14.98,9.44,22.49,28.71,22.49,57.82,0,105.37-.86,212.67-2.57,321.89-1.72,109.22-2.57,216.1-2.57,320.6v292.97Z"/>
+    <path fill="#4DA1A9" d="M405.3,363.01c0-14.09,7.04-25.72,21.15-34.89,14.09-9.15,31.36-13.75,51.81-13.75,26.07,0,44.41,6.35,54.98,19.03,10.57,12.69,15.86,33.49,15.86,62.38v335.18c0,11.28.16,27.33.53,48.11.35,20.8,1.41,43.88,3.17,69.26,1.75,25.38,4.57,51.12,8.46,77.19,3.87,26.09,9.33,49.69,16.39,70.84,7.04,21.15,15.86,38.59,26.43,52.34,10.57,13.74,23.61,20.62,39.12,20.62,26.07,0,46.52-10.92,61.33-32.78,14.8-21.84,25.72-52.87,32.78-93.04,7.04-40.18,11.45-88.82,13.22-145.91,1.75-57.1,2.64-121.23,2.64-192.44v-271.74c0-24.66,7.04-40.53,21.15-47.58,14.09-7.04,31.01-10.57,50.75-10.57s37.01,5.12,51.81,15.33c14.8,10.23,22.2,27.67,22.2,52.34v377.47c0,28.2-.18,55.34-.53,81.41-.36,26.09-.53,51.81-.53,77.19s-.18,50.93-.53,76.66c-.36,25.74-.53,53.05-.53,81.94,0,18.34,2.81,35.78,8.46,52.34,5.63,16.57,11.79,31.55,18.5,44.94,6.69,13.4,12.85,24.85,18.5,34.36,5.63,9.52,8.46,16.39,8.46,20.62,0,11.28-2.83,21.15-8.46,29.6-5.65,8.46-13.05,15.5-22.2,21.15-9.17,5.63-18.87,9.86-29.08,12.69-10.22,2.81-20.27,4.23-30.13,4.23s-18.87-3.7-26.96-11.1c-8.11-7.4-15.33-16.57-21.68-27.49-6.35-10.92-11.63-22.55-15.86-34.89-4.23-12.33-7.4-23.08-9.52-32.25-1.42-6.34-2.48-12.33-3.17-17.97-.71-5.63-3.17-8.46-7.4-8.46-4.94,0-10.57,5.82-16.92,17.45-6.35,11.63-14.8,24.5-25.38,38.59-10.57,14.11-23.97,26.96-40.18,38.59-16.22,11.63-36.66,17.45-61.33,17.45-55.69,0-98.86-14.62-129.52-43.88-30.66-29.24-53.23-67.83-67.67-115.78-14.46-47.93-23.1-102.91-25.91-164.94-2.82-62.02-4.23-125.82-4.23-191.38v-358.44Z"/>
+    <path fill="#4DA1A9" d="M1279.08,1254.14c-41.12,0-78.18-11.14-111.15-33.41-32.99-22.27-61.04-52.04-84.17-89.31-23.13-37.26-40.92-79.87-53.33-127.86-12.43-47.97-18.63-97.66-18.63-149.06,0-53.97,4.7-107.08,14.14-159.34,9.42-52.24,24.62-98.94,45.62-140.06,20.98-41.12,48.19-74.09,81.6-98.94,33.41-24.84,74.09-37.27,122.07-37.27,25.7,0,48.19,3.01,67.46,8.99,19.27,6,35.98,13.49,50.11,22.49s26.34,18.63,36.62,28.91c10.28,10.28,19.28,19.72,26.98,28.27,1.71-9.42,2.99-24.84,3.86-46.26.84-21.4,1.28-46.04,1.28-73.89v-177.33c0-28.69-.22-55.03-.64-79.03-.44-23.97-.64-42.4-.64-55.25,0-7.71.84-16.06,2.57-25.06,1.71-9,5.78-17.13,12.21-24.41,6.43-7.27,15.84-13.49,28.27-18.63,12.41-5.14,29.33-7.71,50.76-7.71,29.98,0,51.18,9.22,63.6,27.63,12.41,18.43,18.63,49.47,18.63,93.16v83.52c0,19.72-.22,40.28-.64,61.68-.44,21.42-.64,41.98-.64,61.68v83.52c0,57.4-.64,114.36-1.93,170.9-1.29,56.54-1.73,112.44-1.29,167.69.42,55.25,1.93,109.22,4.5,161.91,2.57,52.69,7.71,103.88,15.42,153.56,2.57,13.71,6.43,25.28,11.56,34.69,5.14,9.44,10.48,17.99,16.06,25.7,5.56,7.71,10.48,14.78,14.78,21.2,4.28,6.43,6.42,13.49,6.42,21.2,0,12.01-5.78,23.99-17.35,35.98-11.56,12.01-25.28,22.49-41.12,31.48-15.86,8.99-32.12,15.42-48.83,19.27-16.71,3.86-30.64,3.63-41.76-.64-14.58-6-26.56-12.63-35.98-19.92-9.44-7.27-17.35-14.98-23.77-23.13-6.42-8.13-12.01-16.06-16.71-23.77-4.72-7.71-9.22-14.98-13.49-21.84-2.57,6.87-9.86,15.22-21.84,25.06-12.01,9.86-26.56,19.5-43.69,28.91-17.15,9.44-35.98,17.57-56.54,24.41-20.56,6.85-40.7,10.28-60.39,10.28ZM1178.85,851.94c0,20.56,2.99,44.55,8.99,71.96,5.98,27.42,14.78,53.33,26.34,77.74,11.56,24.41,25.48,44.97,41.76,61.68,16.26,16.7,34.69,25.06,55.25,25.06,22.27,0,42.41-9.42,60.39-28.27,17.99-18.83,33.41-41.76,46.26-68.75,12.85-26.98,22.69-55.45,29.55-85.45,6.85-29.97,10.28-56.1,10.28-78.38,0-26.54-3.66-54.81-10.92-84.81-7.29-29.98-17.35-57.38-30.2-82.24-12.85-24.84-28.27-45.62-46.26-62.32-17.99-16.7-38.13-25.06-60.39-25.06-41.12,0-73.24,24.21-96.37,72.6-23.13,48.41-34.69,117.15-34.69,206.24Z"/>
+    <path fill="#4DA1A9" d="M1738.43,132.23c0-38.66,9.65-70.37,29.01-95.12,19.33-24.73,46.99-37.11,82.98-37.11s62.74,12.14,82.98,36.43c20.24,24.29,30.36,55.78,30.36,94.45s-10.12,71.3-30.36,92.43c-20.24,21.15-47.9,31.71-82.98,31.71s-63.65-10.56-82.98-31.71c-19.35-21.12-29.01-51.48-29.01-91.08ZM1853.12,1257.52c-26.99,0-48.81-5.86-65.44-17.54-16.66-11.68-24.96-34.17-24.96-67.46V341.36c0-15.28,2.02-27.43,6.07-36.43,4.05-8.98,9.89-15.73,17.54-20.24,7.63-4.49,16.63-7.19,26.99-8.09,10.33-.89,21.8-1.35,34.41-1.35,13.49,0,25.63.46,36.43,1.35,10.79.91,20.01,3.6,27.66,8.09,7.63,4.51,13.49,11.26,17.54,20.24,4.05,9,6.07,21.15,6.07,36.43v294.14c0,92.66.67,181.94,2.02,267.83,1.35,85.91,2.03,173.84,2.03,263.78,0,27.89-8.56,49.92-25.64,66.11-17.1,16.19-37.34,24.29-60.72,24.29Z"/>
+    <path fill="#4DA1A9" d="M2371.71,192.27c79.67,0,143.48,20.36,191.46,61.04,47.97,40.7,71.96,101.73,71.96,183.11,0,26.56-4.94,46.06-14.78,58.47-9.86,12.43-33.21,18.63-70.03,18.63-22.29,0-41.56-3.63-57.82-10.92-16.28-7.27-24.42-25.9-24.42-55.9,0-35.12-6.42-63.81-19.27-86.09-12.85-22.27-38.13-33.41-75.81-33.41-27.43,0-50.56,7.71-69.39,23.13-18.85,15.42-34.69,35.34-47.55,59.75-12.85,24.41-23.13,51.62-30.84,81.6-7.71,30-13.49,59.75-17.35,89.31-3.85,29.55-6.22,57.18-7.07,82.88-.86,25.7-1.28,46.7-1.28,62.96,0,15.42.84,35.56,2.57,60.39,1.71,24.86,4.5,51.2,8.35,79.03,3.86,27.85,9.42,55.7,16.71,83.52,7.27,27.85,16.7,52.9,28.27,75.17,11.56,22.29,25.48,40.48,41.76,54.61,16.26,14.14,35.54,21.2,57.82,21.2,45.4,0,77.74-21.84,97.02-65.54,19.28-43.69,28.91-103.64,28.91-179.9,0-18.83.84-34.25,2.57-46.26,1.71-11.99,5.14-21.62,10.28-28.91,5.14-7.27,13.05-12.21,23.77-14.78,10.7-2.57,25.06-3.86,43.05-3.86,23.13,0,40.9,3.01,53.33,8.99,12.41,6,21.4,14.36,26.98,25.06,5.56,10.72,8.99,23.13,10.28,37.26,1.28,14.14,1.93,29.35,1.93,45.62,0,47.12-3.86,93.38-11.56,138.78-7.71,45.42-22.71,85.89-44.97,121.43-22.29,35.56-53.55,64.25-93.8,86.09-40.28,21.84-92.96,32.77-158.05,32.77-47.99,0-89.75-8.35-125.29-25.06-35.56-16.7-65.98-39.19-91.23-67.46-25.28-28.27-46.06-61.04-62.32-98.3-16.28-37.26-29.13-76.01-38.55-116.29-9.44-40.26-16.06-81.38-19.92-123.36-3.85-41.96-5.78-81.38-5.78-118.22s1.93-75.17,5.78-115.01c3.86-39.84,10.92-79.03,21.2-117.58,10.28-38.55,24.41-74.95,42.4-109.22,17.99-34.25,40.68-64.25,68.1-89.95,27.41-25.7,60.17-46.26,98.3-61.68,38.11-15.42,82.88-23.13,134.28-23.13Z"/>
+    <path fill="#F4A261" d="M2690.99,964.28c0-43.88,5.72-87.01,17.2-129.42,11.46-42.38,28.92-80.04,52.37-112.96,23.42-32.91,53.11-59.33,89.02-79.29,35.91-19.94,78.78-29.92,128.67-29.92,17.95,0,35.65,1.5,53.11,4.49,17.44,2.99,34.64,4.49,51.62,4.49,24.92,0,37.4-12.46,37.4-37.4v-90.51c0-27.42-2.5-51.36-7.48-71.82-5-20.43-13.47-36.4-25.43-47.88-11.97-11.45-29.43-17.21-52.37-17.21-14.96,0-27.68,2.76-38.15,8.23-10.47,5.5-19.71,12.72-27.68,21.69-8,8.98-14.47,18.7-19.45,29.18-5,10.47-8.98,20.71-11.97,30.67-5,15.97-11.97,25.69-20.95,29.17-8.98,3.51-20.45,5.24-34.41,5.24-11.97,0-23.45-.75-34.41-2.24-10.99-1.5-20.71-4.72-29.17-9.73-8.49-4.98-15.22-11.71-20.2-20.2-5-8.46-7.48-20.2-7.48-35.16,0-30.9,7.22-59.84,21.69-86.78,14.45-26.93,33.15-50.35,56.1-70.32,22.93-19.94,48.62-35.65,77.05-47.13,28.43-11.45,56.59-17.21,84.53-17.21,67.82,0,121.42,9.98,160.83,29.92,39.39,19.96,69.06,48.13,89.02,84.53,19.94,36.42,32.91,80.3,38.9,131.66,5.98,51.38,8.98,108.98,8.98,172.8,0,50.87-.75,102.25-2.24,154.1-1.5,51.87-2.24,103.23-2.24,154.1,0,10.99-.26,23.94-.75,38.9-.51,14.96-.75,29.92-.75,44.88v43.39c0,13.98.49,25.43,1.5,34.41.98,5.98,3.48,13.98,7.48,23.94,3.97,9.98,8.23,19.96,12.72,29.92,4.49,9.98,8.46,18.7,11.97,26.18,3.48,7.48,5.24,12.23,5.24,14.21,0,14.96-5,27.68-14.96,38.15-9.98,10.47-21.95,18.96-35.9,25.43-13.98,6.5-28.19,11.22-42.64,14.21-14.47,2.99-26.7,4.49-36.66,4.49-13.98,0-26.44-6.48-37.4-19.45-10.99-12.95-20.2-28.17-27.68-45.63-7.48-17.44-13.23-35.39-17.21-53.86-4-18.44-5.99-32.66-5.99-42.64-13.98,43.9-40.4,78.55-79.29,103.98-38.9,25.43-80.79,38.15-125.68,38.15-35.91,0-68.82-7.97-98.74-23.94-29.92-15.94-55.87-36.89-77.8-62.84-21.95-25.92-39.16-55.1-51.62-87.52-12.49-32.4-18.7-65.57-18.7-99.49ZM3108.41,808.68c0-5.99-2.99-10.71-8.98-14.21-5.98-3.48-12.72-5.98-20.2-7.48-7.48-1.5-15.22-2.48-23.19-2.99-8-.49-13.98-.75-17.95-.75-59.84,0-102.74,14.47-128.67,43.39-25.95,28.94-38.9,68.33-38.9,118.19,0,30.93,8.23,57.6,24.68,80.04,16.46,22.44,41.64,33.66,75.55,33.66,22.94,0,42.87-9.47,59.85-28.42,16.95-18.94,31.16-41.64,42.64-68.08,11.45-26.41,20.2-53.86,26.18-82.29,5.99-28.43,8.98-52.11,8.98-71.07Z"/>
+  </g>
+</svg>`;
+const MARK=ICON_SVG; const MARKC=ICON_SVG;
+const I={
+  clock:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>',
+  agenda:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>',
+  trend:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 6-6"/><path d="M17 8h3v3"/></svg>',
+  doc:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>',
+  save:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>',
+  upload:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>',
+  cal:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18m-9 4 2 2 4-4"/></svg>',
+  user:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+  brain:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Zm0 0a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/></svg>',
+  spark:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>',
+  plus:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5v14"/></svg>',
+  x:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+  trash:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+  edit:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+  print:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>',
+  up:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>',
+  down:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>',
+  check:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  out:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>',
+  gear:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>',
+  spin:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>'
+};
+
+/* ============================ RENDER (raiz) ============================ */
+function render(){
+  if(isPlaceholder()) return renderSetup();
+  if(state.erro) return renderErro();
+  if(!state.user) return renderAuth();
+  if(state.loading) return renderLoading();
+  renderApp();
+}
+function renderSetup(){
+  app().innerHTML=`<div class="center"><div class="auth-card">
+    <div class="auth-mark">${MARKC}</div>
+    <h1 class="display" style="font-size:24px;color:var(--terra);margin-bottom:6px">Quase lá</h1>
+    <p class="muted" style="margin-bottom:14px">Pra ligar na nuvem, abra este arquivo e preencha no topo do código:</p>
+    <div class="plano-jogo" style="font-family:monospace;font-size:12.5px;line-height:1.9">SUPABASE_URL = "https://seu-projeto.supabase.co"<br>SUPABASE_ANON_KEY = "sua-chave-anon"</div>
+    <p class="muted" style="margin-top:14px">Os valores estão em <b>Supabase → Project Settings → Data API</b>. E rode o arquivo <b>ludica_supabase.sql</b> no SQL Editor uma vez.</p>
+  </div></div>`;
+}
+function renderErro(){
+  app().innerHTML=`<div class="center"><div class="auth-card"><div class="auth-mark">${MARKC}</div>
+    <h1 class="display" style="font-size:22px;color:var(--terra);margin-bottom:6px">Ops</h1>
+    <p class="muted">${esc(state.erro)}</p></div></div>`;
+}
+function renderLoading(){
+  app().innerHTML=`<div class="center"><div style="text-align:center;color:var(--terra)">${I.spin}<p class="muted" style="margin-top:10px">Carregando…</p></div></div>`;
+}
+function renderAuth(){
+  const login=state.authMode==="login";
+  app().innerHTML=`<div class="center"><div class="auth-card">
+    <div class="auth-logo">${LOGO_SVG}</div>
+    <p class="muted" style="margin-bottom:20px">${login?'Entre pra acessar seu espaço.':'Crie sua conta.'}</p>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      ${login?'':'<div><label class="flabel">Seu nome</label><input class="input" id="a-nome" placeholder="ex: Larissa Lamicoski"></div>'}
+      <div><label class="flabel">E-mail</label><input class="input" id="a-mail" type="email" value="${esc(state.authEmail||'')}" placeholder="voce@email.com"></div>
+      <div><label class="flabel">Senha</label><input class="input" id="a-pass" type="password" placeholder="mínimo 6 caracteres"></div>
+      <button class="btn primary" id="a-go" ${state.authBusy?'disabled':''} style="justify-content:center;margin-top:4px">
+        ${state.authBusy?I.spin:''} ${login?'Entrar':'Criar conta'}</button>
+    </div>
+    <p class="muted" style="margin-top:16px;text-align:center">
+      ${login?'Ainda não tem conta? ':'Já tem conta? '}
+      <button class="link" id="a-toggle">${login?'Criar agora':'Entrar'}</button>
+    </p>
+  </div></div>`;
+  const go=()=>{const m=$('#a-mail').value.trim(),p=$('#a-pass').value;state.authEmail=m;if(!m||!p)return toast("Preencha e-mail e senha",true);login?entrar(m,p):criarConta(m,p,($('#a-nome')?.value||'').trim())};
+  $('#a-mail').oninput=e=>state.authEmail=e.target.value;
+  $('#a-go').onclick=go;
+  $('#a-pass').onkeydown=e=>{if(e.key==='Enter')go()};
+  $('#a-toggle').onclick=()=>{state.authEmail=$('#a-mail').value;state.authMode=login?'signup':'login';render()};
+}
+
+function renderApp(){
+  const nomeDona=state.user?.user_metadata?.nome||state.user?.email?.split('@')[0]||'';
+  app().innerHTML=`
+    <header class="top"><div class="top-in">
+      <div class="logo"><div class="logo-svg">${LOGO_SVG}</div></div>
+      <nav class="nav">
+        <button data-v="planejar" class="${state.view==='planejar'?'on':''}">${I.cal} Planejar</button>
+        <button data-v="agenda" class="${state.view==='agenda'?'on':''}">${I.agenda} Agenda</button>
+        <button data-v="evolucao" class="${state.view==='evolucao'?'on':''}">${I.trend} Evolução</button>
+        <button data-v="sessoes" class="${state.view==='sessoes'?'on':''}">${I.clock} Histórico</button>
+        <button data-v="pacientes" class="${state.view==='pacientes'?'on':''}">${I.user} Pacientes</button>
+        <button data-v="jogos" class="${state.view==='jogos'?'on':''}">${I.brain} Jogos</button>
+      </nav>
+      <div class="owner"><div class="owner-av">${esc(iniciaisDe(nomeDona))}</div>
+        <div class="owner-txt"><div class="owner-name">${esc(nomeDona)}</div><div class="owner-sub">${esc(BRAND.clinica)}</div></div>
+      </div>
+      <button class="gear" id="btn-config" title="Configurações">${I.gear}</button>
+    </div></header>
+    <main class="main"><div class="blob"></div><div class="canvas">${
+      state.view==='planejar'?viewPlanejar():
+      state.view==='agenda'?viewAgenda():
+      state.view==='evolucao'?viewEvolucao():
+      state.view==='sessoes'?viewSessoes():
+      state.view==='pacientes'?viewPacientes():viewJogos()
+    }</div></main>`;
+  wire();
+}
+
+/* ============================ VIEWS ============================ */
+function viewPlanejar(){
+  const p=state.pacientes.find(x=>x.id===state.pid);
+  const sug=sugestoes(p), alvo=targetAreas(p), uso=usoPorJogo(state.pid);
+  const primeiro=(state.user?.user_metadata?.nome||'').split(' ')[0];
+  const hero=`
+  <div class="hero">
+    <div>
+      <div class="hero-logo">${LOGO_SVG}</div>
+      <div class="hero-title display">Olá, ${esc(primeiro||'tudo bem?')}</div>
+      <div class="hero-sub">Pronta para transformar o dia de mais um pequeno paciente?</div>
+    </div>
+    <div class="hero-stats">
+      <span class="stat">${I.user}<b>${state.pacientes.length}</b> pacientes</span>
+      <span class="stat">${I.brain}<b>${state.jogos.length}</b> jogos</span>
+      <span class="stat">${I.clock}<b>${state.sessoes.filter(s=>s.data===hoje()).length}</b> hoje</span>
+    </div>
+  </div>
+  <div class="qa-grid">
+    <button class="qa teal" data-qa="novo-pac">${I.user} Novo paciente</button>
+    <button class="qa apricot" data-qa="novo-jogo">${I.plus} Cadastrar jogo</button>
+    <button class="qa plain" data-qa="hist">${I.clock} Histórico</button>
+    <button class="qa plain" data-qa="banco">${I.brain} Banco de jogos</button>
+  </div>`;
+  if(!state.pacientes.length){
+    return hero+`<h2 class="h2 display">Planejar sessão</h2><div class="card empty" style="margin-top:8px">Cadastre um paciente primeiro — clique em <b>Novo paciente</b> acima.</div>`;
+  }
+  return hero+`
+  <h2 class="h2 display">Planejar sessão</h2>
+  <p class="lead">Escolhe o paciente: a lista já cruza a demanda com o que cada jogo trabalha, e a <b style="color:var(--terra)">Sugestão inteligente</b> lê as descrições dos jogos e escolhe os que mais combinam. Monta a sessão à direita.</p>
+  <div class="plan">
+    <div>
+      <label class="flabel">Paciente</label>
+      <select id="sel-pac">${state.pacientes.map(x=>`<option value="${x.id}" ${x.id===state.pid?'selected':''}>${esc(x.iniciais)} · ${x.idade} anos · ${esc(x.demandas.join(', '))}</option>`).join('')}</select>
+      ${p?`
+        <div class="card pat" style="margin-top:14px">
+          <div class="avatar">${iniciaisDe(p.iniciais)}</div>
+          <div><div style="font-weight:600">${p.idade} anos</div>
+            <div class="tags">${p.demandas.map(d=>`<span class="chip demanda">${esc(d)}</span>`).join('')}</div>
+            ${p.obs?`<div class="why">${esc(p.obs)}</div>`:''}
+            ${(()=>{const u=ultimaSessao(p.id);return u?`<div class="why">Última sessão: ${fmtData(u.data)} — ${u.jogos.map(j=>esc(j.nome)).join(', ')}</div>`:''})()}
+          </div>
+        </div>
+        <button class="btn accent" id="btn-ia" style="margin-top:16px" ${state.ai.loading?'disabled':''}>
+          ${state.ai.loading?I.spin:I.spark}${state.ai.loading?'Pensando na sessão…':'Sugestão inteligente'}
+        </button>
+        ${renderAI()}
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin:22px 0 12px">
+          <h3 class="display" style="font-size:18px;font-weight:600;color:var(--ink)">Jogos sugeridos</h3>
+          <span class="muted">${sug.length} combinam com a demanda</span>
+        </div>
+        <div class="glist">${
+          sug.length? sug.map((g,i)=>{
+            const inS=state.sessao.includes(g.id);
+            return `<div class="card gcard rise">
+              <div class="rank">${i+1}</div>
+              <div style="flex:1">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+                  <span class="gname">${esc(g.nome)}</span>
+                  <button class="btn sm ${inS?'':'primary'}" data-add="${g.id}">${inS?I.check+' Na sessão':I.plus+' Adicionar'}</button>
+                </div>
+                <div class="why">${g.max?`${g.min}–${g.max}`:`${g.min}+`} anos · trabalha ${g.hits.length} de ${alvo.length} áreas-foco</div>
+                ${uso.has(g.id)?`<div class="alert-uso">${I.clock} Já usado com este paciente ${uso.get(g.id).count>1?`(${uso.get(g.id).count}x)`:''} · última vez ${fmtData(uso.get(g.id).ultima)}</div>`:''}
+                <div class="tags">${g.areas.map(a=>`<span class="chip ${g.hits.includes(a)?'hit':'dim'}">${esc(a)}</span>`).join('')}</div>
+              </div></div>`;
+          }).join('')
+          : `<div class="card empty">Nenhum jogo do banco bate com essa demanda ainda. Cadastra jogos no banco.</div>`
+        }</div>
+      `:''}
+    </div>
+    <aside class="panel"><div class="card">
+      <div class="panel-head">${I.cal}<b style="font-size:15px">Sessão de hoje</b><span class="muted" style="margin-left:auto">${state.sessao.length} jogo(s)</span></div>
+      ${state.sessao.length? state.sessao.map((id,i)=>{
+        const g=state.jogos.find(x=>x.id===id);if(!g)return'';
+        return `<div class="sess-item">
+          <div class="order"><button data-mv="${id}" data-d="-1">${I.up}</button><button data-mv="${id}" data-d="1">${I.down}</button></div>
+          <span style="font-weight:600;font-size:13.5px;flex:1">${i+1}. ${esc(g.nome)}</span>
+          <button class="btn ghost" style="padding:6px" data-rm="${id}">${I.x}</button></div>`;
+      }).join('') : `<div class="empty">Adiciona jogos da lista pra montar a sessão.</div>`}
+      <div style="padding:15px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:12px">
+        <div><label class="flabel">Data da sessão</label><input class="input" id="in-data" type="date" value="${esc(state.dataSessao||hoje())}"></div>
+        <div><label class="flabel">Objetivo da sessão</label><input class="input" id="in-obj" placeholder="ex: trabalhar controle inibitório" value="${esc(state.objetivo)}"></div>
+        <div><label class="flabel">Nota rápida</label><input class="input" id="in-nota" placeholder="anotação de planejamento" value="${esc(state.nota)}"></div>
+        <button class="btn primary" id="btn-salvar-sessao" ${state.sessao.length?'':'disabled'} style="justify-content:center">${I.save} Salvar sessão</button>
+      </div>
+    </div></aside>
+  </div>`;
+}
+function renderAI(){
+  const {loading,result,error}=state.ai;
+  if(loading||!(result||error))return'';
+  if(error)return `<div class="ai" style="border-color:var(--terra-deep)"><span class="muted">${esc(error)}</span></div>`;
+  const uso=usoPorNome(state.pid);
+  return `<div class="ai rise"><h4>${I.spark} Sugestão da IA</h4>
+    ${result.objetivo?`<p style="font-size:13.5px;margin-bottom:8px"><b>Objetivo:</b> ${esc(result.objetivo)}</p>`:''}
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${(result.jogos||[]).map(j=>{const u=uso.get(j.nome);return `<div style="display:flex;gap:10px;align-items:flex-start">
+        <button class="btn sm" style="padding:5px 8px" data-add-name="${esc(j.nome)}" title="Adicionar à sessão">${I.plus}</button>
+        <div><b style="font-size:13.5px">${esc(j.nome)}</b><div class="why">${esc(j.motivo||'')}</div>
+        ${u?`<div class="alert-uso">${I.clock} Já usado com este paciente ${u.count>1?`(${u.count}x)`:''} · última vez ${fmtData(u.ultima)}</div>`:''}</div></div>`}).join('')}
+    </div>
+    ${result.observacao?`<p class="muted" style="margin-top:10px">${esc(result.observacao)}</p>`:''}</div>`;
+}
+function viewSessoes(){
+  const filtro=state.filtroPac||'todos';
+  let lista=[...state.sessoes].sort((a,b)=>b.ts-a.ts);
+  if(filtro!=='todos')lista=lista.filter(s=>s.pid===filtro);
+  const nome=id=>{const p=state.pacientes.find(x=>x.id===id);return p?p.iniciais:'—'};
+  return `
+  <div style="display:flex;align-items:center;margin-bottom:22px;gap:16px;flex-wrap:wrap">
+    <div><h2 class="h2 display">Histórico de sessões</h2><p class="muted">O que já foi usado com cada paciente — e como a criança reagiu.</p></div>
+    <select id="sel-filtro" style="width:auto;margin-left:auto;min-width:200px">
+      <option value="todos" ${filtro==='todos'?'selected':''}>Todos os pacientes</option>
+      ${state.pacientes.map(p=>`<option value="${p.id}" ${filtro===p.id?'selected':''}>${esc(p.iniciais)}</option>`).join('')}
+    </select>
+  </div>
+  ${lista.length?`<div class="grid">${lista.map(s=>{
+    const preench=s.jogos.filter(j=>j.reacao&&j.reacao.trim()).length;
+    return `<div class="card item-card" style="cursor:pointer" data-open-sess="${s.id}">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="avatar" style="width:40px;height:40px;font-size:14px">${iniciaisDe(nome(s.pid))}</div>
+        <div><b style="font-size:14px">${esc(nome(s.pid))}</b><div class="muted">${fmtData(s.data)} · ${s.jogos.length} jogo(s) · ${preench}/${s.jogos.length} c/ obs</div></div>
+        <span class="chip ${s.status==='realizada'?'hit':'demanda'}" style="margin-left:auto">${s.status==='realizada'?'Realizada':'Planejada'}</span>
+      </div>
+      ${s.objetivo?`<div class="why">${esc(s.objetivo)}</div>`:''}
+      <div class="tags">${s.jogos.map(j=>`<span class="chip dim">${esc(j.nome)}</span>`).join('')}</div>
+    </div>`;
+  }).join('')}</div>`:`<div class="card empty">Nenhuma sessão registrada ainda. Monta uma no <b>Planejar</b> e clica em "Salvar sessão".</div>`}`;
+}
+
+/* ============================ EVOLUÇÃO DO PACIENTE ============================ */
+function areasDaSessao(s){
+  const set=new Set();
+  (s.jogos||[]).forEach(j=>{const g=state.jogos.find(x=>x.id===j.id);if(g)(g.areas||[]).forEach(a=>set.add(a))});
+  return [...set];
+}
+function viewEvolucao(){
+  if(!state.pacientes.length)return `<h2 class="h2 display">Evolução do paciente</h2><div class="card empty" style="margin-top:8px">Cadastre um paciente primeiro.</div>`;
+  if(!state.evoPid||!state.pacientes.find(x=>x.id===state.evoPid))state.evoPid=state.pid||state.pacientes[0].id;
+  const p=state.pacientes.find(x=>x.id===state.evoPid);
+  const sess=sessoesDoPaciente(p.id);
+  const realizadas=sess.filter(s=>s.status==='realizada');
+  const primeira=sess.length?sess[sess.length-1].data:null;
+  const ultima=sess.length?sess[0].data:null;
+  const areasTrab=new Set(); sess.forEach(s=>areasDaSessao(s).forEach(a=>areasTrab.add(a)));
+  return `
+  <div style="display:flex;align-items:center;margin-bottom:18px;gap:16px;flex-wrap:wrap">
+    <div><h2 class="h2 display">Evolução do paciente</h2><p class="muted">Histórico clínico completo, pronto pra exportar e entregar aos responsáveis.</p></div>
+    <select id="sel-evo" style="width:auto;margin-left:auto;min-width:220px">
+      ${state.pacientes.map(x=>`<option value="${x.id}" ${x.id===state.evoPid?'selected':''}>${esc(x.iniciais)}</option>`).join('')}
+    </select>
+    <button class="btn primary" id="btn-relatorio" ${sess.length?'':'disabled'}>${I.doc} Exportar relatório (PDF)</button>
+  </div>
+  <div class="card pat">
+    <div class="avatar">${iniciaisDe(p.iniciais)}</div>
+    <div><b style="font-size:15px">${esc(p.iniciais)}</b><div class="muted">${p.idade} anos</div>
+      <div class="tags">${p.demandas.map(d=>`<span class="chip demanda">${esc(d)}</span>`).join('')}</div></div>
+  </div>
+  <div class="evo-stats">
+    <div class="evo-stat"><div class="num">${sess.length}</div><div class="lbl">Sessões no total</div></div>
+    <div class="evo-stat"><div class="num">${realizadas.length}</div><div class="lbl">Realizadas</div></div>
+    <div class="evo-stat"><div class="num">${areasTrab.size}</div><div class="lbl">Objetivos trabalhados</div></div>
+    <div class="evo-stat"><div class="num" style="font-size:17px;padding-top:6px">${primeira?fmtData(primeira):'—'}</div><div class="lbl">Primeira sessão</div></div>
+    <div class="evo-stat"><div class="num" style="font-size:17px;padding-top:6px">${ultima?fmtData(ultima):'—'}</div><div class="lbl">Última sessão</div></div>
+  </div>
+  <h3 class="display" style="font-size:17px;font-weight:700;margin-bottom:14px">Linha do tempo</h3>
+  ${sess.length?`<div class="tl">${sess.map(s=>{
+    const areas=areasDaSessao(s);
+    const reacoes=(s.jogos||[]).filter(j=>j.reacao&&j.reacao.trim()).map(j=>j.reacao.trim());
+    return `<div class="tl-item ${s.status}">
+      <div class="card" style="padding:14px 16px;cursor:pointer" data-open-sess="${s.id}">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <b style="font-size:14px">${fmtData(s.data)}</b>
+          <span class="chip ${s.status==='realizada'?'hit':'demanda'}">${s.status==='realizada'?'Realizada':'Planejada'}</span>
+          ${s.objetivo?`<span class="muted">· ${esc(s.objetivo)}</span>`:''}
+        </div>
+        ${areas.length?`<div class="tags" style="margin-top:9px">${areas.map(a=>`<span class="chip dim">${esc(a)}</span>`).join('')}</div>`:''}
+        ${reacoes.length?`<div class="why" style="margin-top:8px">${reacoes.map(r=>esc(r)).join(' · ')}</div>`:''}
+        ${s.nota?`<div class="why" style="margin-top:4px"><b>Nota:</b> ${esc(s.nota)}</div>`:''}
+      </div></div>`;
+  }).join('')}</div>`
+  :`<div class="card empty">Nenhuma sessão registrada pra este paciente ainda.</div>`}`;
+}
+function abrirRelatorio(){
+  const p=state.pacientes.find(x=>x.id===state.evoPid); if(!p)return;
+  const sess=[...sessoesDoPaciente(p.id)].reverse(); // cronológica no relatório
+  const realizadas=sess.filter(s=>s.status==='realizada');
+  const nomeProf=state.user?.user_metadata?.nome||'';
+  const emissao=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+  openModal(`
+    <div class="modal-head"><b class="display" style="font-size:19px;color:var(--terra)">Relatório de evolução</b><button class="btn ghost" id="mx" style="margin-left:auto;padding:6px">${I.x}</button></div>
+    <div class="modal-body rep">
+      <div class="rep-head">
+        ${LOGO_SVG}
+        <div class="rep-title">Relatório de<br>Evolução Terapêutica</div>
+      </div>
+      <div class="rep-meta">
+        <div><b>Paciente:</b> ${esc(p.iniciais)}</div>
+        <div><b>Idade:</b> ${p.idade} anos</div>
+        <div><b>Demanda(s):</b> ${esc(p.demandas.join(', ')||'—')}</div>
+        <div><b>Profissional:</b> ${esc(nomeProf)}</div>
+        <div><b>Período:</b> ${sess.length?fmtData(sess[0].data)+' a '+fmtData(sess[sess.length-1].data):'—'}</div>
+        <div><b>Sessões realizadas:</b> ${realizadas.length} de ${sess.length}</div>
+      </div>
+      ${sess.map((s,i)=>{
+        const areas=areasDaSessao(s);
+        const reacoes=(s.jogos||[]).filter(j=>j.reacao&&j.reacao.trim()).map(j=>j.reacao.trim());
+        return `<div class="rep-sess ${s.status}">
+          <h6>Sessão ${i+1} — ${fmtData(s.data)}${s.status!=='realizada'?' (planejada)':''}</h6>
+          ${s.objetivo?`<div class="rep-sec">Objetivo da sessão</div><div>${esc(s.objetivo)}</div>`:''}
+          ${areas.length?`<div class="rep-sec">Objetivos terapêuticos trabalhados</div><div>${areas.map(a=>esc(a)).join(' · ')}</div>`:''}
+          ${reacoes.length?`<div class="rep-sec">Evolução observada</div><div>${reacoes.map(r=>esc(r)).join('<br>')}</div>`:''}
+          ${s.nota?`<div class="rep-sec">Observações</div><div>${esc(s.nota)}</div>`:''}
+        </div>`;
+      }).join('')}
+      <div class="rep-foot"><span>${esc(BRAND.nome)} · ${esc(BRAND.clinica)}</span><span>Emitido em ${emissao}</span></div>
+    </div>
+    <div class="modal-foot"><button class="btn" id="mcancel">Fechar</button><button class="btn primary" id="rep-print">${I.print} Salvar como PDF</button></div>`);
+  $('#mx').onclick=closeModal;$('#mcancel').onclick=closeModal;
+  $('#rep-print').onclick=()=>window.print();
+}
+
+/* ============================ AGENDA (GOOGLE CALENDAR) ============================ */
+let gcalTokenClient=null;
+function viewAgenda(){
+  if(!GOOGLE_CLIENT_ID){
+    return `<h2 class="h2 display">Agenda</h2>
+    <p class="lead">Conecte a agenda do Google e veja/agende sessões sem sair do ${esc(BRAND.nome)}.</p>
+    <div class="card" style="padding:20px;max-width:620px">
+      <b style="font-size:14.5px">Ativação necessária (uma vez, pelo administrador)</b>
+      <p class="muted" style="margin-top:8px">A integração usa o login Google da própria profissional — os eventos não passam por nenhum servidor nosso. Pra ativar: crie um <b>OAuth Client ID</b> no Google Cloud Console (com a Calendar API ativa e o endereço do sistema nas origens autorizadas) e cole no campo <code>GOOGLE_CLIENT_ID</code> no topo do código. As instruções passo a passo estão comentadas lá.</p>
+    </div>`;
+  }
+  const g=state.gcal;
+  if(!g.connected){
+    return `<h2 class="h2 display">Agenda</h2>
+    <p class="lead">Conecte sua conta Google pra ver e criar eventos direto daqui.</p>
+    <div class="card" style="padding:24px;max-width:480px;text-align:center">
+      ${g.erro?`<p class="muted" style="color:var(--secondary-deep);margin-bottom:12px">${esc(g.erro)}</p>`:''}
+      <button class="btn primary" id="btn-gcal-connect" ${g.loading?'disabled':''}>${g.loading?I.spin:I.agenda} Conectar Google Agenda</button>
+      <p class="muted" style="margin-top:12px">Seus eventos ficam só entre o seu navegador e o Google.</p>
+    </div>`;
+  }
+  // agrupa eventos por dia
+  const porDia={};
+  g.events.forEach(ev=>{
+    const ini=ev.start?.dateTime||ev.start?.date; if(!ini)return;
+    const dia=ini.slice(0,10);
+    (porDia[dia]=porDia[dia]||[]).push(ev);
+  });
+  const dias=Object.keys(porDia).sort();
+  const fmtDia=d=>new Date(d+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'});
+  const fmtHora=ev=>{
+    if(ev.start?.date)return 'Dia todo';
+    const h=x=>new Date(x).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    return h(ev.start.dateTime)+'–'+h(ev.end?.dateTime||ev.start.dateTime);
+  };
+  return `
+  <div style="display:flex;align-items:center;margin-bottom:18px;gap:12px;flex-wrap:wrap">
+    <div><h2 class="h2 display">Agenda</h2><p class="muted">Próximos 14 dias da sua Google Agenda.</p></div>
+    <button class="btn" id="btn-gcal-refresh" style="margin-left:auto" ${g.loading?'disabled':''}>${g.loading?I.spin:I.clock} Atualizar</button>
+    <button class="btn primary" id="btn-gcal-novo">${I.plus} Novo evento</button>
+    <button class="btn ghost" id="btn-gcal-out" title="Desconectar">${I.out}</button>
+  </div>
+  ${dias.length?dias.map(d=>`
+    <div class="ag-day">
+      <div class="ag-day-h">${fmtDia(d)}</div>
+      ${porDia[d].map(ev=>`<div class="card ag-ev">
+        <span class="ag-hora">${fmtHora(ev)}</span>
+        <span style="font-weight:600;font-size:14px;flex:1">${esc(ev.summary||'(sem título)')}</span>
+        ${ev.htmlLink?`<a class="btn ghost" style="padding:6px 10px;text-decoration:none" href="${esc(ev.htmlLink)}" target="_blank" rel="noopener">abrir ↗</a>`:''}
+      </div>`).join('')}
+    </div>`).join('')
+  :`<div class="card empty">Nenhum evento nos próximos 14 dias.</div>`}`;
+}
+function gcalConnect(){
+  if(typeof google==='undefined'||!google.accounts){state.gcal.erro="Biblioteca do Google não carregou (sem internet?).";render();return}
+  state.gcal.loading=true;state.gcal.erro=null;render();
+  if(!gcalTokenClient){
+    gcalTokenClient=google.accounts.oauth2.initTokenClient({
+      client_id:GOOGLE_CLIENT_ID,
+      scope:'https://www.googleapis.com/auth/calendar.events',
+      callback:async(resp)=>{
+        if(resp.error){state.gcal.loading=false;state.gcal.erro="Conexão cancelada ou negada.";render();return}
+        state.gcal.token=resp.access_token;state.gcal.connected=true;
+        await gcalCarregar();
+      }
+    });
+  }
+  gcalTokenClient.requestAccessToken({prompt:state.gcal.token?'':'consent'});
+}
+async function gcalCarregar(){
+  state.gcal.loading=true;render();
+  try{
+    const agora=new Date();const fim=new Date(Date.now()+14*86400000);
+    const url=`https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${agora.toISOString()}&timeMax=${fim.toISOString()}&singleEvents=true&orderBy=startTime&maxResults=100`;
+    const r=await fetch(url,{headers:{Authorization:'Bearer '+state.gcal.token}});
+    if(r.status===401){state.gcal.connected=false;state.gcal.token=null;state.gcal.loading=false;state.gcal.erro="Sessão do Google expirou — conecte de novo.";render();return}
+    if(!r.ok)throw new Error("HTTP "+r.status);
+    const data=await r.json();
+    state.gcal.events=data.items||[];
+    state.gcal.loading=false;render();
+  }catch(e){state.gcal.loading=false;state.gcal.erro="Erro ao carregar: "+e.message;state.gcal.connected=false;render()}
+}
+function gcalNovoEvento(){
+  const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+  openModal(`
+    <div class="modal-head"><b class="display" style="font-size:19px;color:var(--terra)">Novo evento</b><button class="btn ghost" id="mx" style="margin-left:auto;padding:6px">${I.x}</button></div>
+    <div class="modal-body">
+      <div><label class="flabel">Título</label><input class="input" id="g-tit" placeholder="ex: Sessão — Arthur"></div>
+      <div class="row">
+        <div class="grow"><label class="flabel">Data</label><input class="input" id="g-data" type="date" value="${hoje()}"></div>
+        <div class="grow"><label class="flabel">Início</label><input class="input" id="g-hora" type="time" value="14:00"></div>
+        <div class="grow"><label class="flabel">Duração</label><select id="g-dur"><option value="30">30 min</option><option value="45">45 min</option><option value="50" selected>50 min</option><option value="60">1 hora</option></select></div>
+      </div>
+      <div><label class="flabel">Descrição (opcional)</label><input class="input" id="g-desc" placeholder="observações"></div>
+    </div>
+    <div class="modal-foot"><button class="btn" id="mcancel">Cancelar</button><button class="btn primary" id="g-save">${I.plus} Criar na Google Agenda</button></div>`);
+  $('#mx').onclick=closeModal;$('#mcancel').onclick=closeModal;
+  $('#g-save').onclick=async()=>{
+    const tit=$('#g-tit').value.trim();if(!tit)return $('#g-tit').focus();
+    const d=$('#g-data').value,h=$('#g-hora').value,dur=+$('#g-dur').value;
+    const ini=new Date(`${d}T${h}:00`);const fim=new Date(ini.getTime()+dur*60000);
+    const pad=n=>String(n).padStart(2,'0');
+    const iso=x=>`${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}T${pad(x.getHours())}:${pad(x.getMinutes())}:00`;
+    try{
+      const r=await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events',{
+        method:'POST',headers:{Authorization:'Bearer '+state.gcal.token,'content-type':'application/json'},
+        body:JSON.stringify({summary:tit,description:$('#g-desc').value.trim(),start:{dateTime:iso(ini),timeZone:tz},end:{dateTime:iso(fim),timeZone:tz}})
+      });
+      if(!r.ok)throw new Error("HTTP "+r.status);
+      toast("Evento criado na Google Agenda.");closeModal();gcalCarregar();
+    }catch(e){toast("Erro ao criar: "+e.message,true)}
+  };
+}
+
+function viewPacientes(){
+  return `
+  <div style="display:flex;align-items:center;margin-bottom:22px;gap:16px;flex-wrap:wrap">
+    <div><h2 class="h2 display">Pacientes</h2><p class="muted">Nome completo do paciente. Os dados ficam protegidos por login (RLS).</p></div>
+    <button class="btn primary" id="btn-novo-pac" style="margin-left:auto">${I.plus} Novo paciente</button>
+  </div>
+  ${state.pacientes.length?`<div class="grid">${state.pacientes.map(p=>`
+    <div class="card item-card">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="avatar">${iniciaisDe(p.iniciais)}</div>
+        <div><b style="font-size:15px">${esc(p.iniciais)}</b><div class="muted">${p.idade} anos</div></div>
+        <div class="item-actions"><button class="btn ghost" style="padding:7px" data-edit-pac="${p.id}">${I.edit}</button><button class="btn ghost" style="padding:7px" data-del-pac="${p.id}">${I.trash}</button></div>
+      </div>
+      <div class="tags">${p.demandas.map(d=>`<span class="chip demanda">${esc(d)}</span>`).join('')}</div>
+      ${p.obs?`<div class="why">${esc(p.obs)}</div>`:''}
+    </div>`).join('')}</div>`:`<div class="card empty">Nenhum paciente ainda. Clica em "Novo paciente".</div>`}`;
+}
+function viewJogos(){
+  return `
+  <div style="display:flex;align-items:center;margin-bottom:22px;gap:16px;flex-wrap:wrap">
+    <div><h2 class="h2 display">Banco de jogos</h2><p class="muted">A tua "planilha" — cada jogo com as áreas que trabalha.</p></div>
+    <input class="input" id="in-busca" style="width:170px;margin-left:auto" placeholder="Buscar" value="${esc(state.busca)}">
+    <button class="btn" id="btn-exemplos">${I.plus} Carregar meus jogos</button>
+    <button class="btn" id="btn-import">${I.upload} Importar (IA)</button>
+    <button class="btn primary" id="btn-novo-jogo">${I.plus} Novo jogo</button>
+  </div>
+  <div id="jogos-grid">${gridJogos()}</div>`;
+}
+function gridJogos(){
+  const f=state.jogos.filter(g=>g.nome.toLowerCase().includes(state.busca.toLowerCase())||g.areas.some(a=>a.toLowerCase().includes(state.busca.toLowerCase())));
+  return state.jogos.length?`<div class="grid">${f.map(g=>`
+    <div class="card item-card">
+      <div style="display:flex;align-items:flex-start">
+        <div><b style="font-size:15px">${esc(g.nome)}</b><div class="muted">${g.max?`${g.min}–${g.max}`:`${g.min}+`} anos</div></div>
+        <div class="item-actions"><button class="btn ghost" style="padding:7px" data-edit-jogo="${g.id}">${I.edit}</button><button class="btn ghost" style="padding:7px" data-del-jogo="${g.id}">${I.trash}</button></div>
+      </div>
+      <div class="tags">${g.areas.map(a=>`<span class="chip">${esc(a)}</span>`).join('')}</div>
+      ${g.obs?`<div class="why">${esc(g.obs)}</div>`:''}
+    </div>`).join('')}</div>`:`<div class="card empty">Banco ainda vazio. Clica em <b>"Carregar meus jogos"</b> aqui em cima pra subir a sua lista.</div>`;
+}
+
+/* ============================ EVENTOS ============================ */
+function wire(){
+  document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{state.view=b.dataset.v;render()});
+  const cfg=$('#btn-config'); if(cfg)cfg.onclick=openConfig;
+  document.querySelectorAll('[data-qa]').forEach(b=>b.onclick=()=>{const a=b.dataset.qa;if(a==='novo-pac')modalPaciente(null);else if(a==='novo-jogo')modalJogo(null);else if(a==='hist'){state.view='sessoes';render()}else if(a==='banco'){state.view='jogos';render()}});
+
+  const sel=$('#sel-pac'); if(sel)sel.onchange=()=>{state.pid=sel.value;state.sessao=[];state.ai={loading:false,result:null,error:null};render()};
+  const ia=$('#btn-ia'); if(ia)ia.onclick=pedirIA;
+  const obj=$('#in-obj'); if(obj)obj.oninput=()=>state.objetivo=obj.value;
+  const dat=$('#in-data'); if(dat)dat.onchange=()=>state.dataSessao=dat.value;
+  const nota=$('#in-nota'); if(nota)nota.oninput=()=>state.nota=nota.value;
+  const salvar=$('#btn-salvar-sessao'); if(salvar)salvar.onclick=salvarSessao;
+
+  document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>toggleSessao(b.dataset.add));
+  document.querySelectorAll('[data-add-name]').forEach(b=>b.onclick=()=>addByName(b.dataset.addName));
+  document.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>toggleSessao(b.dataset.rm));
+  document.querySelectorAll('[data-mv]').forEach(b=>b.onclick=()=>move(b.dataset.mv,+b.dataset.d));
+
+  const filtro=$('#sel-filtro'); if(filtro)filtro.onchange=()=>{state.filtroPac=filtro.value;render()};
+  document.querySelectorAll('[data-open-sess]').forEach(b=>b.onclick=()=>modalSessao(b.dataset.openSess));
+
+  const evo=$('#sel-evo'); if(evo)evo.onchange=()=>{state.evoPid=evo.value;render()};
+  const rel=$('#btn-relatorio'); if(rel)rel.onclick=abrirRelatorio;
+  const gc=$('#btn-gcal-connect'); if(gc)gc.onclick=gcalConnect;
+  const gr=$('#btn-gcal-refresh'); if(gr)gr.onclick=gcalCarregar;
+  const gn=$('#btn-gcal-novo'); if(gn)gn.onclick=gcalNovoEvento;
+  const go=$('#btn-gcal-out'); if(go)go.onclick=()=>{if(confirm('Desconectar da Google Agenda?')){state.gcal={connected:false,token:null,events:[],loading:false,erro:null};render()}};
+
+  const bp=$('#btn-novo-pac'); if(bp)bp.onclick=()=>modalPaciente(null);
+  document.querySelectorAll('[data-edit-pac]').forEach(b=>b.onclick=()=>modalPaciente(state.pacientes.find(p=>p.id===b.dataset.editPac)));
+  document.querySelectorAll('[data-del-pac]').forEach(b=>b.onclick=()=>{if(confirm('Excluir este paciente?'))excluirPaciente(b.dataset.delPac)});
+
+  const busca=$('#in-busca'); if(busca)busca.oninput=()=>{
+    state.busca=busca.value;
+    const grid=$('#jogos-grid'); if(grid){grid.innerHTML=gridJogos();wireJogosGrid()}
+  };
+  const bj=$('#btn-novo-jogo'); if(bj)bj.onclick=()=>modalJogo(null);
+  const bex=$('#btn-exemplos'); if(bex)bex.onclick=popularExemplos;
+  const bim=$('#btn-import'); if(bim)bim.onclick=abrirImport;
+  wireJogosGrid();
+}
+function wireJogosGrid(){
+  document.querySelectorAll('[data-edit-jogo]').forEach(b=>b.onclick=()=>modalJogo(state.jogos.find(g=>g.id===b.dataset.editJogo)));
+  document.querySelectorAll('[data-del-jogo]').forEach(b=>b.onclick=()=>{if(confirm('Excluir este jogo?'))excluirJogo(b.dataset.delJogo)});
+}
+function toggleSessao(id){state.sessao=state.sessao.includes(id)?state.sessao.filter(x=>x!==id):[...state.sessao,id];render()}
+function addByName(nome){const g=state.jogos.find(x=>x.nome===nome);if(g&&!state.sessao.includes(g.id)){state.sessao.push(g.id);render()}}
+function move(id,d){const i=state.sessao.indexOf(id),j=i+d;if(j<0||j>=state.sessao.length)return;const s=[...state.sessao];[s[i],s[j]]=[s[j],s[i]];state.sessao=s;render()}
+
+/* ============================ MODAIS ============================ */
+function closeModal(){const m=$('#scrim');if(m)m.remove()}
+function openModal(html){closeModal();const d=document.createElement('div');d.className='scrim';d.id='scrim';d.innerHTML=`<div class="modal">${html}</div>`;d.onclick=e=>{if(e.target===d)closeModal()};document.body.appendChild(d)}
+
+function modalPaciente(p){
+  const editing=!!p; const f=p?{...p}:{iniciais:"",idade:7,demandas:[],obs:""};
+  const sel=new Set(f.demandas);
+  const extras=f.demandas.filter(d=>!DEMANDAS.some(x=>x.nome===d));
+  openModal(`
+    <div class="modal-head"><b class="display" style="font-size:19px;color:var(--terra)">${editing?'Editar':'Novo'} paciente</b><button class="btn ghost" id="mx" style="margin-left:auto;padding:6px">${I.x}</button></div>
+    <div class="modal-body">
+      <div class="row"><div class="grow" style="flex:2"><label class="flabel">Nome completo</label><input class="input" id="f-ini" value="${esc(f.iniciais)}" placeholder="ex: Maria Eduarda Silva"></div>
+      <div class="grow"><label class="flabel">Idade</label><input class="input" id="f-idade" type="number" min="2" max="17" value="${f.idade}"></div></div>
+      <div><label class="flabel">Demanda(s) principal(is)</label>
+        <div class="toggles" id="f-dem">${DEMANDAS.map(d=>`<button type="button" class="toggle ${sel.has(d.nome)?'on':''}" data-t="${esc(d.nome)}">${esc(d.nome)}</button>`).join('')}${extras.map(n=>`<button type="button" class="toggle on" data-t="${esc(n)}">${esc(n)}</button>`).join('')}</div>
+        <div class="row" style="margin-top:9px"><input class="input" id="f-dem-novo" placeholder="Outra demanda… (ex: Seletividade alimentar)" style="flex:1"><button type="button" class="btn sm" id="f-dem-add">${I.plus} Adicionar</button></div>
+      </div>
+      <div><label class="flabel">Observações</label><input class="input" id="f-obs" value="${esc(f.obs)}" placeholder="opcional"></div>
+    </div>
+    <div class="modal-foot"><button class="btn" id="mcancel">Cancelar</button><button class="btn primary" id="msave">Salvar</button></div>`);
+  $('#mx').onclick=closeModal; $('#mcancel').onclick=closeModal;
+  const toggleGroup=$('#f-dem');
+  function wireToggle(b){b.onclick=()=>{const n=b.dataset.t;if(sel.has(n)){sel.delete(n);b.classList.remove('on')}else{sel.add(n);b.classList.add('on')}}}
+  document.querySelectorAll('#f-dem .toggle').forEach(wireToggle);
+  function addCustomDemanda(){
+    const inp=$('#f-dem-novo'); const val=inp.value.trim(); if(!val)return;
+    if([...toggleGroup.querySelectorAll('.toggle')].some(b=>b.dataset.t.toLowerCase()===val.toLowerCase())){inp.value='';return}
+    const b=document.createElement('button'); b.type='button'; b.className='toggle on'; b.dataset.t=val; b.textContent=val;
+    wireToggle(b); toggleGroup.appendChild(b); sel.add(val); inp.value=''; inp.focus();
+  }
+  $('#f-dem-add').onclick=addCustomDemanda;
+  $('#f-dem-novo').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();addCustomDemanda()}};
+  $('#msave').onclick=()=>{
+    const ini=$('#f-ini').value.trim(); if(!ini)return $('#f-ini').focus();
+    salvarPaciente({id:f.id,iniciais:ini,idade:Number($('#f-idade').value)||7,demandas:[...sel],obs:$('#f-obs').value.trim()});
+  };
+}
+function modalJogo(g){
+  const editing=!!g; const f=g?{...g}:{nome:"",areas:[],min:5,max:null,obs:""};
+  const sel=new Set(f.areas);
+  const extras=f.areas.filter(a=>!AREAS.includes(a));
+  openModal(`
+    <div class="modal-head"><b class="display" style="font-size:19px;color:var(--terra)">${editing?'Editar':'Novo'} jogo</b><button class="btn ghost" id="mx" style="margin-left:auto;padding:6px">${I.x}</button></div>
+    <div class="modal-body">
+      <div><label class="flabel">Nome do jogo</label><input class="input" id="f-nome" value="${esc(f.nome)}" placeholder="ex: Uno Flip"></div>
+      <div class="row"><div class="grow"><label class="flabel">Idade mínima</label><input class="input" id="f-min" type="number" min="2" max="17" value="${f.min}"></div>
+      <div class="grow"><label class="flabel">Idade máxima (opcional)</label><input class="input" id="f-max" type="number" min="2" max="17" value="${f.max??''}" placeholder="—"></div></div>
+      <div><label class="flabel">Áreas que trabalha</label>
+        <div class="toggles" id="f-areas">${AREAS.map(a=>`<button type="button" class="toggle ${sel.has(a)?'on':''}" data-t="${esc(a)}">${esc(a)}</button>`).join('')}${extras.map(n=>`<button type="button" class="toggle on" data-t="${esc(n)}">${esc(n)}</button>`).join('')}</div>
+        <div class="row" style="margin-top:9px"><input class="input" id="f-area-novo" placeholder="Outra área… (ex: Motricidade global)" style="flex:1"><button type="button" class="btn sm" id="f-area-add">${I.plus} Adicionar</button></div>
+      </div>
+      <div><label class="flabel">Observações</label><input class="input" id="f-obs" value="${esc(f.obs)}" placeholder="opcional"></div>
+    </div>
+    <div class="modal-foot"><button class="btn" id="mcancel">Cancelar</button><button class="btn primary" id="msave">Salvar</button></div>`);
+  $('#mx').onclick=closeModal; $('#mcancel').onclick=closeModal;
+  const toggleGroup=$('#f-areas');
+  function wireToggle(b){b.onclick=()=>{const n=b.dataset.t;if(sel.has(n)){sel.delete(n);b.classList.remove('on')}else{sel.add(n);b.classList.add('on')}}}
+  document.querySelectorAll('#f-areas .toggle').forEach(wireToggle);
+  function addCustomArea(){
+    const inp=$('#f-area-novo'); const val=inp.value.trim(); if(!val)return;
+    if([...toggleGroup.querySelectorAll('.toggle')].some(b=>b.dataset.t.toLowerCase()===val.toLowerCase())){inp.value='';return}
+    const b=document.createElement('button'); b.type='button'; b.className='toggle on'; b.dataset.t=val; b.textContent=val;
+    wireToggle(b); toggleGroup.appendChild(b); sel.add(val); inp.value=''; inp.focus();
+  }
+  $('#f-area-add').onclick=addCustomArea;
+  $('#f-area-novo').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();addCustomArea()}};
+  $('#msave').onclick=()=>{
+    const nome=$('#f-nome').value.trim(); if(!nome)return $('#f-nome').focus();
+    const mx=$('#f-max').value;
+    salvarJogo({id:f.id,nome,areas:[...sel],min:Number($('#f-min').value)||2,max:mx?Number(mx):null,obs:$('#f-obs').value.trim()});
+  };
+}
+function modalSessao(id){
+  const s=state.sessoes.find(x=>x.id===id); if(!s)return;
+  const p=state.pacientes.find(x=>x.id===s.pid);
+  openModal(`
+    <div class="modal-head"><b class="display" style="font-size:19px;color:var(--terra)">Sessão · ${fmtData(s.data)}</b><button class="btn ghost" id="mx" style="margin-left:auto;padding:6px">${I.x}</button></div>
+    <div class="modal-body">
+      <div style="display:flex;gap:10px;align-items:center"><div class="avatar">${p?iniciaisDe(p.iniciais):'—'}</div>
+        <div><b>${esc(p?p.iniciais:'—')}${p?` · ${p.idade} anos`:''}</b>${p?`<div class="tags">${p.demandas.map(d=>`<span class="chip demanda">${esc(d)}</span>`).join('')}</div>`:''}</div></div>
+      <div class="row">
+        <div class="grow"><label class="flabel">Data da sessão</label><input class="input" id="s-data" type="date" value="${esc(s.data)}"></div>
+        <div class="grow" style="flex:2"><label class="flabel">Objetivo</label><input class="input" id="s-obj" value="${esc(s.objetivo)}" placeholder="objetivo da sessão"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <label class="flabel" style="margin:0">Jogos e reações</label>
+        ${s.jogos.map(j=>`<div class="plano-jogo"><b>${esc(j.nome)}</b>
+          <textarea class="input" data-r="${j.id}" rows="2" style="margin-top:8px;resize:vertical" placeholder="Como reagiu / observações">${esc(j.reacao||'')}</textarea></div>`).join('')}
+      </div>
+      <div><label class="flabel">Nota geral</label><input class="input" id="s-nota" value="${esc(s.nota||'')}" placeholder="opcional"></div>
+      <label style="display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:600;cursor:pointer">
+        <input type="checkbox" id="s-real" ${s.status==='realizada'?'checked':''} style="width:18px;height:18px;accent-color:var(--terra)"> Marcar como realizada</label>
+    </div>
+    <div class="modal-foot" style="justify-content:space-between">
+      <button class="btn ghost" id="s-del" style="color:var(--terra-deep)">${I.trash} Excluir</button>
+      <div style="display:flex;gap:10px"><button class="btn" id="s-print">${I.print} Imprimir</button><button class="btn primary" id="s-save">${I.save} Salvar</button></div>
+    </div>`);
+  $('#mx').onclick=closeModal;
+  $('#s-print').onclick=()=>window.print();
+  $('#s-del').onclick=()=>{if(confirm('Excluir esta sessão do histórico?'))excluirSessao(id)};
+  $('#s-save').onclick=async()=>{
+    const jogos=s.jogos.map(j=>({...j}));
+    document.querySelectorAll('[data-r]').forEach(t=>{const j=jogos.find(x=>x.id===t.dataset.r);if(j)j.reacao=t.value.trim()});
+    const patch={data:$('#s-data').value||s.data,objetivo:$('#s-obj').value.trim(),nota:$('#s-nota').value.trim(),status:$('#s-real').checked?'realizada':'planejada',jogos};
+    const {data,error}=await sb.from('sessoes').update(patch).eq('id',id).select().single();
+    if(error)return toast(error.message,true);
+    state.sessoes=state.sessoes.map(x=>x.id===id?sessFromRow(data):x);
+    closeModal();render();
+  };
+}
+function openConfig(){
+  const key=lsGet(KKEY)||""; const model=lsGet(MKEY)||"gemini-2.5-flash";
+  const nome=state.user?.user_metadata?.nome||"";
+  openModal(`
+    <div class="modal-head"><b class="display" style="font-size:19px;color:var(--terra)">Configurações</b><button class="btn ghost" id="mx" style="margin-left:auto;padding:6px">${I.x}</button></div>
+    <div class="modal-body">
+
+      <div class="set-sec">
+        <h5>${I.user} Perfil</h5>
+        <div><label class="flabel">Nome de exibição</label><input class="input" id="c-nome" value="${esc(nome)}" placeholder="ex: Larissa Lamicoski"></div>
+        <div><label class="flabel">E-mail da conta</label><input class="input" value="${esc(state.user?.email||'')}" disabled style="opacity:.65"></div>
+        <button class="btn sm" id="c-save-nome" style="align-self:flex-start">${I.check} Salvar nome</button>
+      </div>
+
+      <div class="set-sec">
+        <h5>${I.gear} Segurança</h5>
+        <div class="row">
+          <div class="grow"><label class="flabel">Nova senha</label><input class="input" id="c-pass1" type="password" placeholder="mínimo 6 caracteres"></div>
+          <div class="grow"><label class="flabel">Repetir nova senha</label><input class="input" id="c-pass2" type="password" placeholder="repita"></div>
+        </div>
+        <button class="btn sm" id="c-save-pass" style="align-self:flex-start">${I.check} Trocar senha</button>
+      </div>
+
+      <div class="set-sec">
+        <h5>${I.spark} Inteligência artificial</h5>
+        <p class="muted">Usa a API gratuita do Google Gemini. A chave fica salva só neste navegador.</p>
+        <div><label class="flabel">Chave da API (AIza…)</label><input class="input" id="f-key" type="password" value="${esc(key)}" placeholder="AIzaSy..."></div>
+        <div><label class="flabel">Modelo</label><select id="f-model">
+          <option value="gemini-2.5-flash" ${model.includes('flash')&&!model.includes('lite')?'selected':''}>Gemini 2.5 Flash — recomendado (grátis)</option>
+          <option value="gemini-2.5-flash-lite" ${model.includes('lite')?'selected':''}>Gemini 2.5 Flash-Lite — mais rápida (grátis)</option>
+        </select></div>
+        <p class="muted">Chave grátis em aistudio.google.com/apikey. Na camada gratuita, o Google pode usar o conteúdo enviado (idade, demanda, observações) pra melhorar os modelos — o nome do paciente nunca é enviado.</p>
+        <button class="btn sm" id="c-save-ia" style="align-self:flex-start">${I.check} Salvar IA</button>
+      </div>
+
+      <div class="set-sec">
+        <h5>${I.save} Seus dados</h5>
+        <p class="muted">Baixa uma cópia de tudo (pacientes, jogos e sessões) num arquivo — bom como backup periódico.</p>
+        <button class="btn sm" id="c-backup" style="align-self:flex-start">${I.upload} Exportar backup (.json)</button>
+      </div>
+
+    </div>
+    <div class="modal-foot" style="justify-content:space-between">
+      <button class="btn ghost" id="c-sair" style="color:var(--terra-deep)">${I.out} Sair da conta</button>
+      <button class="btn" id="mcancel">Fechar</button>
+    </div>`);
+  $('#mx').onclick=closeModal; $('#mcancel').onclick=closeModal;
+  $('#c-save-nome').onclick=async()=>{
+    const n=$('#c-nome').value.trim(); if(!n)return toast("Digite um nome.",true);
+    const {data,error}=await sb.auth.updateUser({data:{nome:n}});
+    if(error)return toast(error.message,true);
+    state.user=data.user; toast("Nome atualizado."); render(); openConfig();
+  };
+  $('#c-save-pass').onclick=async()=>{
+    const p1=$('#c-pass1').value,p2=$('#c-pass2').value;
+    if(p1.length<6)return toast("A senha precisa de pelo menos 6 caracteres.",true);
+    if(p1!==p2)return toast("As senhas não conferem.",true);
+    const {error}=await sb.auth.updateUser({password:p1});
+    if(error)return toast(error.message,true);
+    $('#c-pass1').value='';$('#c-pass2').value='';
+    toast("Senha alterada com sucesso.");
+  };
+  $('#c-save-ia').onclick=()=>{lsSet(KKEY,$('#f-key').value.trim());lsSet(MKEY,$('#f-model').value);toast("Configuração da IA salva.")};
+  $('#c-backup').onclick=()=>{
+    const payload={exportado_em:new Date().toISOString(),pacientes:state.pacientes,jogos:state.jogos,sessoes:state.sessoes};
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+    a.download=`${BRAND.nome.toLowerCase()}-backup-${hoje()}.json`;a.click();URL.revokeObjectURL(a.href);
+    toast("Backup baixado.");
+  };
+  $('#c-sair').onclick=()=>{if(confirm('Sair da conta?')){closeModal();sair()}};
+}
+
+
+/* ============================ IA (BYOK — Google Gemini) ============================ */
+async function chamarGemini(prompt,key,model,maxTokens){
+  const url=`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+  const r=await fetch(url,{
+    method:"POST",
+    headers:{"content-type":"application/json","x-goog-api-key":key},
+    body:JSON.stringify({
+      contents:[{parts:[{text:prompt}]}],
+      generationConfig:{maxOutputTokens:maxTokens,responseMimeType:"application/json",thinkingConfig:{thinkingBudget:0}}
+    })
+  });
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||("HTTP "+r.status))}
+  const data=await r.json();
+  const cand=data.candidates?.[0];
+  if(!cand)throw new Error("resposta vazia da IA");
+  const text=(cand.content?.parts||[]).map(p=>p.text||"").join("\n");
+  if(!text.trim())throw new Error(cand.finishReason==="MAX_TOKENS"?"resposta cortada — tente novamente":"resposta vazia da IA");
+  return JSON.parse(text.replace(/```json|```/g,"").trim());
+}
+async function pedirIA(){
+  const p=state.pacientes.find(x=>x.id===state.pid); if(!p)return;
+  const key=lsGet(KKEY);
+  if(!key){state.ai={loading:false,result:null,error:"Adicione sua chave da API na engrenagem (canto superior) pra ligar a sugestão automática."};render();return}
+  const model=lsGet(MKEY)||"gemini-2.5-flash";
+  state.ai={loading:true,result:null,error:null};render();
+  try{
+    const usoMap=usoPorNome(p.id);
+    const catalogo=state.jogos.map(g=>{const u=usoMap.get(g.nome);return {nome:g.nome,descricao:g.obs||"",faixa:g.max?`${g.min}-${g.max}`:`${g.min}+`,ja_usado_com_este_paciente:u?`${u.count}x, última vez ${u.ultima}`:"nunca"}});
+    const prompt=`Você é uma assistente clínica que ajuda psicólogas infantis a planejar sessões com jogos terapêuticos.
+
+Paciente:
+- Idade: ${p.idade} anos
+- Demanda(s): ${p.demandas.join(", ")}
+- Observações: ${p.obs||"—"}
+
+Catálogo (JSON) — cada item tem "descricao" com os objetivos que trabalha:
+${JSON.stringify(catalogo)}
+
+Leia as DESCRIÇÕES e escolha de 2 a 4 itens DESTE catálogo cujos objetivos melhor atendam à(s) demanda(s) e à idade do paciente. Use exatamente os nomes. Cada item tem "ja_usado_com_este_paciente" — prefira variar em relação ao que já foi muito repetido, mas pode reusar se for claramente o mais indicado. Para cada um, explique em 1 frase curta o porquê, conectando com a demanda. Sugira também um objetivo curto pra sessão.
+
+Responda SOMENTE com JSON válido, neste formato:
+{"objetivo":"...","jogos":[{"nome":"...","motivo":"..."}],"observacao":"..."}`;
+    const parsed=await chamarGemini(prompt,key,model,2048);
+    state.ai={loading:false,result:parsed,error:null};render();
+  }catch(e){ state.ai={loading:false,result:null,error:"Não consegui gerar agora: "+e.message};render(); }
+}
+
+/* ============================ IMPORTAR PLANILHA (IA) ============================ */
+function abrirImport(){
+  if(typeof XLSX==="undefined")return toast("Leitor de planilha não carregou (sem internet?).",true);
+  const key=lsGet(KKEY);
+  if(!key){toast("Adicione sua chave da IA na engrenagem primeiro.",true);return openConfig();}
+  const inp=document.createElement('input');inp.type='file';inp.accept='.xlsx,.xls,.csv';
+  inp.onchange=()=>{const f=inp.files[0];if(f)processarArquivo(f)};
+  inp.click();
+}
+async function processarArquivo(file){
+  openModal(`<div class="modal-body" style="align-items:center;text-align:center;padding:42px 20px"><div style="color:var(--terra)">${I.spin}</div><p class="muted" style="margin-top:12px">Lendo a planilha e organizando com a IA…</p></div>`);
+  try{
+    const buf=await file.arrayBuffer();
+    const wb=XLSX.read(buf,{type:'array'});
+    const ws=wb.Sheets[wb.SheetNames[0]];
+    const rows=XLSX.utils.sheet_to_json(ws,{defval:''});
+    if(!rows.length){closeModal();return toast("A planilha parece vazia.",true)}
+    const key=lsGet(KKEY), model=lsGet(MKEY)||"gemini-2.5-flash";
+    const prompt=`Você recebe linhas de uma planilha de jogos terapêuticos (JSON) e converte para o formato do sistema.
+
+Áreas válidas (use SOMENTE estas, mapeando o texto da planilha para as mais próximas):
+${AREAS.join(", ")}
+
+Regras:
+- "nome": nome do jogo.
+- "areas": lista só com áreas válidas acima que o jogo trabalha (infira pelas colunas).
+- "idade_min": número (se não houver, use 4).
+- "idade_max": número ou null.
+- "obs": observação curta ou "".
+- Ignore linhas vazias ou que não sejam jogos.
+
+Linhas (JSON):
+${JSON.stringify(rows).slice(0,12000)}
+
+Responda SOMENTE com um array JSON:
+[{"nome":"...","areas":["..."],"idade_min":6,"idade_max":null,"obs":"..."}]`;
+    let arr=await chamarGemini(prompt,key,model,8192);
+    if(!Array.isArray(arr))throw new Error("resposta inesperada da IA");
+    arr=arr.map(g=>({nome:String(g.nome||"").trim(),areas:(g.areas||[]).filter(a=>AREAS.includes(a)),min:Number(g.idade_min)||4,max:g.idade_max?Number(g.idade_max):null,obs:String(g.obs||"").trim()})).filter(g=>g.nome);
+    if(!arr.length){closeModal();return toast("A IA não encontrou jogos na planilha.",true)}
+    previewImport(arr);
+  }catch(e){closeModal();toast("Erro ao importar: "+e.message,true)}
+}
+function previewImport(games){
+  const sel=new Set(games.map((_,i)=>i));
+  openModal(`
+    <div class="modal-head"><b class="display" style="font-size:19px;color:var(--terra)">Revisar importação</b><button class="btn ghost" id="mx" style="margin-left:auto;padding:6px">${I.x}</button></div>
+    <div class="modal-body">
+      <p class="muted">A IA organizou ${games.length} jogo(s). Desmarque os que não quiser — depois dá pra editar cada um normalmente.</p>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        ${games.map((g,i)=>`<label class="plano-jogo" style="display:flex;gap:10px;cursor:pointer;align-items:flex-start">
+          <input type="checkbox" data-i="${i}" checked style="margin-top:3px;width:17px;height:17px;accent-color:var(--terra)">
+          <div style="flex:1"><b>${esc(g.nome)}</b> <span class="muted">· ${g.max?`${g.min}–${g.max}`:`${g.min}+`} anos</span>
+            <div class="tags" style="margin-top:6px">${g.areas.map(a=>`<span class="chip">${esc(a)}</span>`).join('')||'<span class="muted">sem áreas identificadas</span>'}</div></div>
+        </label>`).join('')}
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn" id="mcancel">Cancelar</button><button class="btn primary" id="mconfirm">${I.plus} Adicionar ao banco</button></div>`);
+  $('#mx').onclick=closeModal;$('#mcancel').onclick=closeModal;
+  document.querySelectorAll('[data-i]').forEach(c=>c.onchange=()=>{const i=+c.dataset.i;c.checked?sel.add(i):sel.delete(i)});
+  $('#mconfirm').onclick=()=>confirmarImport(games.filter((_,i)=>sel.has(i)));
+}
+async function confirmarImport(games){
+  if(!games.length)return closeModal();
+  const rows=games.map(g=>({user_id:state.user.id,nome:g.nome,areas:g.areas,idade_min:g.min,idade_max:g.max,obs:g.obs}));
+  const {data,error}=await sb.from('jogos').insert(rows).select();
+  if(error)return toast(error.message,true);
+  state.jogos=[...state.jogos,...data.map(jogoFromRow)].sort((a,b)=>a.nome.localeCompare(b.nome));
+  toast(`${data.length} jogo(s) adicionados.`);closeModal();render();
+}
+
+boot();
+</script>
+</body>
+</html>
