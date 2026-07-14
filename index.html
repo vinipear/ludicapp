@@ -308,6 +308,13 @@ const BRAND = {
 document.title = `${BRAND.nome} — ${BRAND.subtitulo}`;
 
 /* ============================================================
+   2.1) PRIVACIDADE — troque pelo e-mail de contato real.
+   Usado no rodapé da tela de login, nas Configurações e na
+   página privacidade.html (edite o e-mail lá também).
+   ============================================================ */
+const CONTATO_PRIVACIDADE = "contato@seudominio.com";
+
+/* ============================================================
    3) GOOGLE AGENDA — vem de graça junto com o "Entrar com o Google".
    No login, já pedimos também a permissão de acesso à Agenda
    (escopo calendar.events). Pra isso funcionar:
@@ -805,6 +812,9 @@ function renderAuth(){
     <p class="muted" style="margin-top:16px;text-align:center">
       ${login?'Ainda não tem conta? ':'Já tem conta? '}
       <button class="link" id="a-toggle">${login?'Criar agora':'Entrar'}</button>
+    </p>
+    <p class="muted" style="margin-top:14px;text-align:center;font-size:12px">
+      Ao continuar, você concorda com a <a href="privacidade.html" target="_blank" rel="noopener" style="color:var(--terra-deep)">Política de Privacidade</a>.
     </p>
   </div></div>`;
   const go=()=>{const m=$('#a-mail').value.trim(),p=$('#a-pass').value;state.authEmail=m;if(!m||!p)return toast("Preencha e-mail e senha",true);login?entrar(m,p):criarConta(m,p,($('#a-nome')?.value||'').trim())};
@@ -1806,6 +1816,9 @@ function openConfig(){
         <button class="btn sm" id="c-backup" style="align-self:flex-start">${I.upload} Exportar backup (.json)</button>
       </div>
 
+    </div>
+    <div class="set-sec" style="border-top:1px solid var(--line);padding-top:14px">
+      <a href="privacidade.html" target="_blank" rel="noopener" class="muted" style="font-size:12.5px;color:var(--terra-deep)">${I.doc} Política de Privacidade</a>
     </div>
     <div class="modal-foot" style="justify-content:space-between">
       <button class="btn ghost" id="c-sair" style="color:var(--terra-deep)">${I.out} Sair da conta</button>
