@@ -91,7 +91,19 @@ body{font-family:'Nunito Sans',system-ui,sans-serif;color:var(--ink);background:
 .flabel{font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:7px;display:block}
 select,.input,textarea.input{width:100%;font-family:inherit;font-size:14px;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:11px;padding:11px 13px}
 select:hover,.input:hover{border-color:var(--terra)}
+.sel-label{font-size:11.5px;font-weight:700;color:var(--primary-deep);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+.select-fancy{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233C858C' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 15px center;background-size:16px;padding-right:42px;font-size:14.5px;font-weight:600;cursor:pointer}
 .pat{display:flex;align-items:center;gap:14px;padding:16px 18px}
+.pat-card{display:flex;align-items:center;gap:16px;padding:16px 20px;flex-wrap:wrap}
+.avatar-lg{width:58px;height:58px;font-size:19px;border-radius:16px}
+.pat-info{flex:1;min-width:180px}
+.pat-name{font-family:'Quicksand',sans-serif;font-size:18px;font-weight:700;color:var(--ink)}
+.chip.soft{background:var(--primary-tint);color:var(--primary-deep);font-weight:700}
+.pat-last{padding-left:18px;border-left:1px solid var(--line);text-align:right;flex-shrink:0}
+.pat-last-lbl{font-size:10.5px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em}
+.pat-last-date{font-size:13px;color:var(--ink);margin-top:5px}
+.pat-last-game{font-size:13px;font-weight:700;color:var(--primary-deep);margin-top:2px}
+@media(max-width:480px){.pat-last{border-left:0;border-top:1px solid var(--line);text-align:left;padding:12px 0 0;width:100%}}
 .avatar{width:46px;height:46px;border-radius:14px;background:var(--primary-tint);color:var(--primary-deep);display:grid;place-items:center;font-weight:700;font-family:'Quicksand',sans-serif;font-size:15px;flex-shrink:0}
 .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
 .glist{display:flex;flex-direction:column;gap:12px}
@@ -773,17 +785,24 @@ function viewPlanejar(){
   <p class="lead">Escolhe o paciente: a lista já cruza a demanda com o que cada jogo trabalha, e a <b style="color:var(--terra)">Sugestão inteligente</b> lê as descrições dos jogos e escolhe os que mais combinam. Monta a sessão à direita.</p>
   <div class="plan">
     <div>
-      <label class="flabel">Paciente</label>
-      <select id="sel-pac">${state.pacientes.map(x=>`<option value="${x.id}" ${x.id===state.pid?'selected':''}>${esc(x.iniciais)} · ${x.idade} anos · ${esc(x.demandas.join(', '))}</option>`).join('')}</select>
+      <div class="sel-label">Selecionar paciente</div>
+      <select id="sel-pac" class="select-fancy">${state.pacientes.map(x=>`<option value="${x.id}" ${x.id===state.pid?'selected':''}>${esc(x.iniciais)} · ${x.idade} anos · ${esc(x.demandas.join(', '))}</option>`).join('')}</select>
       ${p?`
-        <div class="card pat" style="margin-top:14px">
-          <div class="avatar">${iniciaisDe(p.iniciais)}</div>
-          <div><div style="font-weight:600">${p.idade} anos</div>
-            <div class="tags">${p.demandas.map(d=>`<span class="chip demanda">${esc(d)}</span>`).join('')}</div>
-            ${p.obs?`<div class="why">${esc(p.obs)}</div>`:''}
-            ${(()=>{const u=ultimaSessao(p.id);return u?`<div class="why">Última sessão: ${fmtData(u.data)} — ${u.jogos.map(j=>esc(j.nome)).join(', ')}</div>`:''})()}
+        <div class="card pat-card" style="margin-top:14px">
+          <div class="avatar avatar-lg">${iniciaisDe(p.iniciais)}</div>
+          <div class="pat-info">
+            <div class="pat-name">${esc(p.iniciais)}</div>
+            <div class="tags">
+              <span class="chip soft">${p.idade} anos</span>
+              ${p.demandas.map(d=>`<span class="chip demanda">${esc(d)}</span>`).join('')}
+            </div>
+          </div>
+          <div class="pat-last">
+            <div class="pat-last-lbl">Última sessão</div>
+            ${(()=>{const u=ultimaSessao(p.id);return u?`<div class="pat-last-date">${fmtData(u.data)}</div><div class="pat-last-game">${esc(u.jogos[0]?.nome||'')}</div>`:`<div class="muted" style="font-size:12.5px;margin-top:5px">Nenhuma ainda</div>`})()}
           </div>
         </div>
+        ${p.obs?`<div class="why" style="margin-top:8px">${esc(p.obs)}</div>`:''}
         <button class="btn accent" id="btn-ia" style="margin-top:16px" ${state.ai.loading?'disabled':''}>
           ${state.ai.loading?I.spin:I.spark}${state.ai.loading?'Pensando na sessão…':'Sugestão inteligente'}
         </button>
