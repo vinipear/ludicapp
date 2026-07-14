@@ -15,7 +15,7 @@
   /* aliases: mantêm classes antigas funcionando com a nova paleta */
   --brown-deep:var(--deep);
   --terra:var(--primary);--terra-deep:var(--primary-deep);--terra-tint:var(--primary-tint);
-  --sand:var(--gold);--sand-tint:var(--gold-tint);--rose-tint:var(--secondary-tint);
+  --sand-tint:var(--gold-tint);
 }
 body{font-family:'Nunito Sans',system-ui,sans-serif;color:var(--ink);background:var(--paper);min-height:100vh;line-height:1.5;-webkit-font-smoothing:antialiased}
 .display{font-family:'Quicksand',sans-serif;letter-spacing:-.005em}
@@ -44,7 +44,6 @@ body{font-family:'Nunito Sans',system-ui,sans-serif;color:var(--ink);background:
 .lead{color:var(--ink-soft);font-size:14px;margin-bottom:22px;max-width:60ch}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;transition:box-shadow .18s,border-color .18s}
 .item-card:hover,.gcard:hover{box-shadow:0 4px 14px rgba(62,42,30,.07);border-color:#D9C9A8}
-.greet{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 18px;margin-bottom:24px}
 .hero{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:6px}
 .hero-title{font-size:28px;font-weight:700;color:var(--ink)}
 .hero-sub{color:var(--ink-soft);font-size:14.5px;margin-top:1px}
@@ -367,9 +366,9 @@ let sb = null;
 const state = {
   user:null, loading:false, erro:null, authMode:"login", authBusy:false, authEmail:"",
   view:"planejar",
-  jogos:[], pacientes:[], sessoes:[],
-  pid:"", sessao:[], objetivo:"", nota:"", busca:"", filtroPac:"todos",
-  dataSessao:"", evoPid:"",
+  jogos:[], pacientes:[], sessoes:[], demandas:[],
+  pid:"", sessao:[], objetivo:"", nota:"", buscaJogos:"", buscaPac:"", filtroPac:"todos", filtroTipo:"todos",
+  dataSessao:"", evoPid:"", selDia:new Set(),
   gcal:{connected:false,token:null,events:[],loading:false,erro:null},
   ai:{loading:false,result:null,error:null}
 };
@@ -384,20 +383,52 @@ function fmtData(iso){if(!iso)return'';const p=String(iso).split('-');return p.l
 function toast(msg,err){document.querySelectorAll('.toast').forEach(t=>t.remove());const t=document.createElement('div');t.className='toast'+(err?' err':'');t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),3200)}
 const iniciaisDe = nome => {const p=String(nome||'').trim().split(/\s+/).filter(Boolean);if(!p.length)return '—';return (p[0][0]+(p.length>1?p[p.length-1][0]:'')).toUpperCase();};
 
-// chave da IA (fica no navegador, por dispositivo)
-const KKEY="ludica_api_key", MKEY="ludica_model";
+// modelo de IA escolhido (fica salvo no navegador, por dispositivo) — a CHAVE da IA fica só no servidor (Edge Function), nunca aqui
+const MKEY="ludica_model";
+/* se o navegador tiver um modelo antigo salvo (ex: gemini-2.5-flash, já desativado), atualiza pro atual */
+function modeloAtual(){
+  let m=lsGet(MKEY)||"";
+  if(!m||!/^gemini-3\./.test(m)){ m=m.includes('lite')?"gemini-3.1-flash-lite":"gemini-3.5-flash"; lsSet(MKEY,m); }
+  return m;
+}
 function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
 function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
 
 // mapeamento banco <-> app
-const jogoFromRow = r => ({id:r.id,nome:r.nome,areas:r.areas||[],min:r.idade_min,max:r.idade_max,obs:r.obs||''});
+const jogoFromRow = r => ({id:r.id,nome:r.nome,areas:r.areas||[],min:r.idade_min,max:r.idade_max,obs:r.obs||'',tipo:r.tipo||'jogo'});
 const pacFromRow  = r => ({id:r.id,iniciais:r.iniciais,idade:r.idade,demandas:r.demandas||[],obs:r.obs||''});
-const sessFromRow = r => ({id:r.id,pid:r.paciente_id,ts:new Date(r.created_at).getTime(),data:r.data,objetivo:r.objetivo||'',nota:r.nota||'',status:r.status,jogos:r.jogos||[]});
+const sessFromRow = r => ({id:r.id,pid:r.paciente_id,ts:new Date(r.created_at).getTime(),data:r.data,objetivo:r.objetivo||'',nota:r.nota||'',status:r.status,jogos:r.jogos||[],reflexao:r.reflexao||null});
+const demFromRow  = r => ({id:r.id,nome:r.nome,areas:r.areas||[]});
 
-function targetAreas(p){const s=new Set();(p?.demandas||[]).forEach(d=>{const f=DEMANDAS.find(x=>x.nome===d);if(f)f.areas.forEach(a=>s.add(a))});return[...s]}
+/* escreve no Supabase; se faltar coluna nova no banco, remove os campos opcionais e tenta de novo (assim nada quebra antes da migração SQL) */
+async function safeWrite(fn, payload, optionalKeys){
+  let r = await fn(payload);
+  if(r.error){
+    const msg=((r.error.message||'')+' '+(r.error.code||'')+' '+(r.error.details||'')).toLowerCase();
+    if(/pgrst204|42703|could not find|column/.test(msg)){
+      const pl={...payload}, dropped=optionalKeys.filter(k=>k in pl);
+      dropped.forEach(k=>delete pl[k]);
+      if(dropped.length){
+        toast('Coluna(s) "'+dropped.join(', ')+'" ainda não existem no banco — rode o SQL de migração. Salvei sem elas por ora.',true);
+        r=await fn(pl);
+      }
+    }
+  }
+  return r;
+}
+
+/* demandas efetivas = as que já vêm no sistema (DEMANDAS) + as personalizadas que a psicóloga criou (state.demandas) */
+function demandasEfetivas(){
+  const base=DEMANDAS.slice();
+  (state.demandas||[]).forEach(c=>{ if(!base.some(b=>b.nome.toLowerCase()===c.nome.toLowerCase())) base.push({nome:c.nome,areas:c.areas||[]}); });
+  return base;
+}
+function mapaDemandas(){ const m=new Map(); demandasEfetivas().forEach(d=>m.set(d.nome,d.areas||[])); return m; }
+function ehDemandaBase(n){ return DEMANDAS.some(x=>x.nome===n); }
+function targetAreas(p){const m=mapaDemandas();const s=new Set();(p?.demandas||[]).forEach(d=>{(m.get(d)||[]).forEach(a=>s.add(a))});return[...s]}
 function sugestoes(p){
   if(!p)return[];const alvo=targetAreas(p);
-  return state.jogos.filter(g=>p.idade>=g.min).map(g=>{
+  return state.jogos.filter(g=>p.idade>=g.min&&(g.max==null||p.idade<=g.max)).map(g=>{
     const hits=g.areas.filter(a=>alvo.includes(a));return{...g,hits,score:hits.length};
   }).filter(g=>g.score>0).sort((a,b)=>b.score-a.score);
 }
@@ -443,6 +474,7 @@ async function carregarTudo(){
     state.jogos=(j.data||[]).map(jogoFromRow);
     state.pacientes=(p.data||[]).map(pacFromRow);
     state.sessoes=(s.data||[]).map(sessFromRow);
+    try{ const d=await sb.from('demandas').select('*').order('nome'); if(!d.error) state.demandas=(d.data||[]).map(demFromRow); }catch(e){}
     if(!state.pacientes.find(x=>x.id===state.pid)) state.pid=state.pacientes[0]?.id||"";
     state.loading=false; render();
   }catch(e){ state.loading=false; toast("Erro ao carregar: "+(e.message||e),true); render(); }
@@ -464,9 +496,33 @@ async function criarConta(email,senha,nome){
   if(data.session){ state.user=data.session.user; await carregarTudo(); }
   else { toast("Conta criada! Confirme pelo e-mail e depois entre.");state.authMode="login";render(); }
 }
-async function sair(){ await sb.auth.signOut(); state.user=null; state.jogos=[];state.pacientes=[];state.sessoes=[];state.sessao=[]; render(); }
+async function sair(){ await sb.auth.signOut(); state.user=null; state.jogos=[];state.pacientes=[];state.sessoes=[];state.demandas=[];state.sessao=[];state.selDia=new Set(); render(); }
 
 /* ============================ CRUD ============================ */
+async function salvarDemandasCustom(list){
+  for(const item of list){
+    try{
+      const existente=state.demandas.find(d=>d.nome.toLowerCase()===item.nome.toLowerCase());
+      if(existente){
+        if(JSON.stringify((existente.areas||[]).slice().sort())!==JSON.stringify((item.areas||[]).slice().sort())){
+          const {data,error}=await sb.from('demandas').update({areas:item.areas}).eq('id',existente.id).select().single();
+          if(error)throw error;
+          state.demandas=state.demandas.map(d=>d.id===existente.id?demFromRow(data):d);
+        }
+      }else{
+        const {data,error}=await sb.from('demandas').insert({user_id:state.user.id,nome:item.nome,areas:item.areas}).select().single();
+        if(error)throw error;
+        state.demandas=[...state.demandas,demFromRow(data)];
+      }
+    }catch(e){
+      const m=(e.message||'').toLowerCase();
+      if(/demandas|relation|schema cache|does not exist|find the table/.test(m)){
+        toast("Pra guardar demandas personalizadas, rode o SQL da tabela 'demandas'.",true);
+        break;
+      }
+    }
+  }
+}
 async function salvarPaciente(f){
   const payload={iniciais:f.iniciais,idade:f.idade,demandas:f.demandas,obs:f.obs};
   if(f.id){
@@ -489,13 +545,13 @@ async function excluirPaciente(id){
   render();
 }
 async function salvarJogo(f){
-  const payload={nome:f.nome,areas:f.areas,idade_min:f.min,idade_max:f.max,obs:f.obs};
+  const payload={nome:f.nome,areas:f.areas,idade_min:f.min,idade_max:f.max,obs:f.obs,tipo:f.tipo||'jogo'};
   if(f.id){
-    const {data,error}=await sb.from('jogos').update(payload).eq('id',f.id).select().single();
+    const {data,error}=await safeWrite(pl=>sb.from('jogos').update(pl).eq('id',f.id).select().single(),payload,['tipo']);
     if(error)return toast(error.message,true);
     state.jogos=state.jogos.map(x=>x.id===f.id?jogoFromRow(data):x);
   }else{
-    const {data,error}=await sb.from('jogos').insert({...payload,user_id:state.user.id}).select().single();
+    const {data,error}=await safeWrite(pl=>sb.from('jogos').insert({...pl,user_id:state.user.id}).select().single(),payload,['tipo']);
     if(error)return toast(error.message,true);
     state.jogos=[...state.jogos,jogoFromRow(data)].sort((a,b)=>a.nome.localeCompare(b.nome));
   }
@@ -539,7 +595,8 @@ async function excluirSessao(id){
 }
 
 /* ============================ ÍCONES ============================ */
-const ICON_SVG=`<svg viewBox="0 0 6547.78 4287.44" style="width:32px;height:auto;display:block" aria-hidden="true"><path fill="var(--terra)" d="Camada_2"/></svg>`;
+/* símbolo redondo usado nas telas de setup/erro — provisório até você ter um ícone quadrado da marca */
+const ICON_SVG=`<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="var(--terra)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>`;
 const LOGO_SVG=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4678.64 1368.03" aria-label="Lúdica">
   
   <g  >
@@ -554,7 +611,7 @@ const LOGO_SVG=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4678.64 136
     <path fill="#F4A261" d="M2690.99,964.28c0-43.88,5.72-87.01,17.2-129.42,11.46-42.38,28.92-80.04,52.37-112.96,23.42-32.91,53.11-59.33,89.02-79.29,35.91-19.94,78.78-29.92,128.67-29.92,17.95,0,35.65,1.5,53.11,4.49,17.44,2.99,34.64,4.49,51.62,4.49,24.92,0,37.4-12.46,37.4-37.4v-90.51c0-27.42-2.5-51.36-7.48-71.82-5-20.43-13.47-36.4-25.43-47.88-11.97-11.45-29.43-17.21-52.37-17.21-14.96,0-27.68,2.76-38.15,8.23-10.47,5.5-19.71,12.72-27.68,21.69-8,8.98-14.47,18.7-19.45,29.18-5,10.47-8.98,20.71-11.97,30.67-5,15.97-11.97,25.69-20.95,29.17-8.98,3.51-20.45,5.24-34.41,5.24-11.97,0-23.45-.75-34.41-2.24-10.99-1.5-20.71-4.72-29.17-9.73-8.49-4.98-15.22-11.71-20.2-20.2-5-8.46-7.48-20.2-7.48-35.16,0-30.9,7.22-59.84,21.69-86.78,14.45-26.93,33.15-50.35,56.1-70.32,22.93-19.94,48.62-35.65,77.05-47.13,28.43-11.45,56.59-17.21,84.53-17.21,67.82,0,121.42,9.98,160.83,29.92,39.39,19.96,69.06,48.13,89.02,84.53,19.94,36.42,32.91,80.3,38.9,131.66,5.98,51.38,8.98,108.98,8.98,172.8,0,50.87-.75,102.25-2.24,154.1-1.5,51.87-2.24,103.23-2.24,154.1,0,10.99-.26,23.94-.75,38.9-.51,14.96-.75,29.92-.75,44.88v43.39c0,13.98.49,25.43,1.5,34.41.98,5.98,3.48,13.98,7.48,23.94,3.97,9.98,8.23,19.96,12.72,29.92,4.49,9.98,8.46,18.7,11.97,26.18,3.48,7.48,5.24,12.23,5.24,14.21,0,14.96-5,27.68-14.96,38.15-9.98,10.47-21.95,18.96-35.9,25.43-13.98,6.5-28.19,11.22-42.64,14.21-14.47,2.99-26.7,4.49-36.66,4.49-13.98,0-26.44-6.48-37.4-19.45-10.99-12.95-20.2-28.17-27.68-45.63-7.48-17.44-13.23-35.39-17.21-53.86-4-18.44-5.99-32.66-5.99-42.64-13.98,43.9-40.4,78.55-79.29,103.98-38.9,25.43-80.79,38.15-125.68,38.15-35.91,0-68.82-7.97-98.74-23.94-29.92-15.94-55.87-36.89-77.8-62.84-21.95-25.92-39.16-55.1-51.62-87.52-12.49-32.4-18.7-65.57-18.7-99.49ZM3108.41,808.68c0-5.99-2.99-10.71-8.98-14.21-5.98-3.48-12.72-5.98-20.2-7.48-7.48-1.5-15.22-2.48-23.19-2.99-8-.49-13.98-.75-17.95-.75-59.84,0-102.74,14.47-128.67,43.39-25.95,28.94-38.9,68.33-38.9,118.19,0,30.93,8.23,57.6,24.68,80.04,16.46,22.44,41.64,33.66,75.55,33.66,22.94,0,42.87-9.47,59.85-28.42,16.95-18.94,31.16-41.64,42.64-68.08,11.45-26.41,20.2-53.86,26.18-82.29,5.99-28.43,8.98-52.11,8.98-71.07Z"/>
   </g>
 </svg>`;
-const MARK=ICON_SVG; const MARKC=ICON_SVG;
+const MARKC=ICON_SVG;
 const I={
   clock:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>',
   agenda:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>',
@@ -759,31 +816,70 @@ function renderAI(){
     </div>
     ${result.observacao?`<p class="muted" style="margin-top:10px">${esc(result.observacao)}</p>`:''}</div>`;
 }
-function viewSessoes(){
+function viewSessoes(){ return `<div id="sessoes-view">${viewSessoesBody()}</div>`; }
+function viewSessoesBody(){
   const filtro=state.filtroPac||'todos';
   let lista=[...state.sessoes].sort((a,b)=>b.ts-a.ts);
   if(filtro!=='todos')lista=lista.filter(s=>s.pid===filtro);
   const nome=id=>{const p=state.pacientes.find(x=>x.id===id);return p?p.iniciais:'—'};
+  // agrupa por dia (data da sessão), mais recente primeiro; dentro do dia, mais recente primeiro
+  const grupos=new Map();
+  lista.forEach(s=>{ const k=s.data||'—'; if(!grupos.has(k))grupos.set(k,[]); grupos.get(k).push(s); });
+  const dias=[...grupos.keys()].sort((a,b)=>b.localeCompare(a));
+  const idsVisiveis=new Set(lista.map(s=>s.id));
+  [...state.selDia].forEach(id=>{if(!idsVisiveis.has(id))state.selDia.delete(id)}); // limpa seleção de itens que saíram do filtro
+  const nSel=state.selDia.size;
   return `
   <div style="display:flex;align-items:center;margin-bottom:22px;gap:16px;flex-wrap:wrap">
-    <div><h2 class="h2 display">Histórico de sessões</h2><p class="muted">O que já foi usado com cada paciente — e como a criança reagiu.</p></div>
+    <div><h2 class="h2 display">Histórico de sessões</h2><p class="muted">Linha do tempo por dia — o que já foi usado com cada paciente.</p></div>
     <select id="sel-filtro" style="width:auto;margin-left:auto;min-width:200px">
       <option value="todos" ${filtro==='todos'?'selected':''}>Todos os pacientes</option>
       ${state.pacientes.map(p=>`<option value="${p.id}" ${filtro===p.id?'selected':''}>${esc(p.iniciais)}</option>`).join('')}
     </select>
+    <button class="btn primary" id="btn-print-dia" ${nSel?'':'disabled'}>${I.print} Imprimir selecionadas${nSel?` (${nSel})`:''}</button>
   </div>
-  ${lista.length?`<div class="grid">${lista.map(s=>{
-    const preench=s.jogos.filter(j=>j.reacao&&j.reacao.trim()).length;
-    return `<div class="card item-card" style="cursor:pointer" data-open-sess="${s.id}">
-      <div style="display:flex;align-items:center;gap:10px">
-        <div class="avatar" style="width:40px;height:40px;font-size:14px">${iniciaisDe(nome(s.pid))}</div>
-        <div><b style="font-size:14px">${esc(nome(s.pid))}</b><div class="muted">${fmtData(s.data)} · ${s.jogos.length} jogo(s) · ${preench}/${s.jogos.length} c/ obs</div></div>
-        <span class="chip ${s.status==='realizada'?'hit':'demanda'}" style="margin-left:auto">${s.status==='realizada'?'Realizada':'Planejada'}</span>
+  ${dias.length?dias.map(dia=>{
+    const sess=grupos.get(dia);
+    const todasSel=sess.every(s=>state.selDia.has(s.id));
+    return `<div class="hist-dia" style="margin-bottom:26px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" class="chk-dia-all" data-dia="${esc(dia)}" ${todasSel?'checked':''} style="width:17px;height:17px;accent-color:var(--terra)">
+          <b class="display" style="font-size:15px;color:var(--terra)">${fmtDiaLongo(dia)}</b>
+        </label>
+        <span class="muted" style="font-size:12.5px">· ${sess.length} sessão${sess.length>1?'ões':''}</span>
       </div>
-      ${s.objetivo?`<div class="why">${esc(s.objetivo)}</div>`:''}
-      <div class="tags">${s.jogos.map(j=>`<span class="chip dim">${esc(j.nome)}</span>`).join('')}</div>
+      <div style="display:flex;flex-direction:column;gap:8px;padding-left:4px;border-left:2px solid var(--line)">
+        ${sess.map(s=>{
+          const preench=s.jogos.filter(j=>j.reacao&&j.reacao.trim()).length;
+          return `<div class="card item-card" style="margin-left:14px;display:flex;align-items:flex-start;gap:12px;cursor:default">
+            <input type="checkbox" class="chk-sess" data-id="${s.id}" ${state.selDia.has(s.id)?'checked':''} style="width:17px;height:17px;accent-color:var(--terra);margin-top:3px;flex-shrink:0">
+            <div style="flex:1;cursor:pointer" data-open-sess="${s.id}">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div class="avatar" style="width:36px;height:36px;font-size:13px">${iniciaisDe(nome(s.pid))}</div>
+                <div><b style="font-size:14px">${esc(nome(s.pid))}</b><div class="muted">${s.jogos.length} jogo(s) · ${preench}/${s.jogos.length} c/ obs</div></div>
+                ${s.reflexao&&Object.values(s.reflexao).some(v=>v)?`<span class="chip dim" title="Raciocínio clínico registrado" style="margin-left:auto">${I.brain}</span><span class="chip ${s.status==='realizada'?'hit':'demanda'}" style="margin-left:8px">${s.status==='realizada'?'Realizada':'Planejada'}</span>`:`<span class="chip ${s.status==='realizada'?'hit':'demanda'}" style="margin-left:auto">${s.status==='realizada'?'Realizada':'Planejada'}</span>`}
+              </div>
+              ${s.objetivo?`<div class="why">${esc(s.objetivo)}</div>`:''}
+              <div class="tags">${s.jogos.map(j=>`<span class="chip dim">${esc(j.nome)}</span>`).join('')}</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
     </div>`;
-  }).join('')}</div>`:`<div class="card empty">Nenhuma sessão registrada ainda. Monta uma no <b>Planejar</b> e clica em "Salvar sessão".</div>`}`;
+  }).join(''):`<div class="card empty">Nenhuma sessão registrada ainda. Monta uma no <b>Planejar</b> e clica em "Salvar sessão".</div>`}`;
+}
+function fmtDiaLongo(iso){
+  if(iso==='—')return'Sem data';
+  const hj=hoje(); const p=String(iso).split('-');
+  const ontem=new Date(); ontem.setDate(ontem.getDate()-1);
+  const ontemIso=ontem.getFullYear()+'-'+String(ontem.getMonth()+1).padStart(2,'0')+'-'+String(ontem.getDate()).padStart(2,'0');
+  const DIAS=['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+  let rotulo=fmtData(iso);
+  if(iso===hj)rotulo='Hoje';
+  else if(iso===ontemIso)rotulo='Ontem';
+  else if(p.length===3){const d=new Date(+p[0],+p[1]-1,+p[2]);rotulo=`${DIAS[d.getDay()]}, ${fmtData(iso)}`;rotulo=rotulo.charAt(0).toUpperCase()+rotulo.slice(1)}
+  return rotulo;
 }
 
 /* ============================ EVOLUÇÃO DO PACIENTE ============================ */
@@ -801,6 +897,13 @@ function viewEvolucao(){
   const primeira=sess.length?sess[sess.length-1].data:null;
   const ultima=sess.length?sess[0].data:null;
   const areasTrab=new Set(); sess.forEach(s=>areasDaSessao(s).forEach(a=>areasTrab.add(a)));
+  // produtividade global (todos os pacientes) — conta sessões até hoje, sem inflar com planejadas futuras
+  const _h=hoje(), _ano=_h.slice(0,4), _mes=_h.slice(0,7);
+  const MESES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  const nomeMes=MESES[+_mes.slice(5,7)-1];
+  const sDia=state.sessoes.filter(s=>s.data===_h).length;
+  const sMes=state.sessoes.filter(s=>s.data&&s.data.startsWith(_mes)&&s.data<=_h).length;
+  const sAno=state.sessoes.filter(s=>s.data&&s.data.startsWith(_ano)&&s.data<=_h).length;
   return `
   <div style="display:flex;align-items:center;margin-bottom:18px;gap:16px;flex-wrap:wrap">
     <div><h2 class="h2 display">Evolução do paciente</h2><p class="muted">Histórico clínico completo, pronto pra exportar e entregar aos responsáveis.</p></div>
@@ -808,6 +911,12 @@ function viewEvolucao(){
       ${state.pacientes.map(x=>`<option value="${x.id}" ${x.id===state.evoPid?'selected':''}>${esc(x.iniciais)}</option>`).join('')}
     </select>
     <button class="btn primary" id="btn-relatorio" ${sess.length?'':'disabled'}>${I.doc} Exportar relatório (PDF)</button>
+  </div>
+  <h3 class="display" style="font-size:17px;font-weight:700;margin-bottom:14px">Suas sessões <span class="muted" style="font-weight:400;font-size:13px">· todos os pacientes</span></h3>
+  <div class="evo-stats" style="margin-bottom:26px">
+    <div class="evo-stat"><div class="num">${sDia}</div><div class="lbl">Hoje</div></div>
+    <div class="evo-stat"><div class="num">${sMes}</div><div class="lbl">Em ${nomeMes}</div></div>
+    <div class="evo-stat"><div class="num">${sAno}</div><div class="lbl">Em ${_ano}</div></div>
   </div>
   <div class="card pat">
     <div class="avatar">${iniciaisDe(p.iniciais)}</div>
@@ -996,9 +1105,15 @@ function viewPacientes(){
   return `
   <div style="display:flex;align-items:center;margin-bottom:22px;gap:16px;flex-wrap:wrap">
     <div><h2 class="h2 display">Pacientes</h2><p class="muted">Nome completo do paciente. Os dados ficam protegidos por login (RLS).</p></div>
-    <button class="btn primary" id="btn-novo-pac" style="margin-left:auto">${I.plus} Novo paciente</button>
+    <input class="input" id="in-busca-pac" style="width:170px;margin-left:auto" placeholder="Buscar" value="${esc(state.buscaPac)}">
+    <button class="btn primary" id="btn-novo-pac">${I.plus} Novo paciente</button>
   </div>
-  ${state.pacientes.length?`<div class="grid">${state.pacientes.map(p=>`
+  <div id="pac-grid">${gridPac()}</div>`;
+}
+function gridPac(){
+  const q=(state.buscaPac||'').toLowerCase();
+  const f=state.pacientes.filter(p=>!q||p.iniciais.toLowerCase().includes(q)||(p.demandas||[]).some(d=>d.toLowerCase().includes(q))||(p.obs||'').toLowerCase().includes(q));
+  return state.pacientes.length?(f.length?`<div class="grid">${f.map(p=>`
     <div class="card item-card">
       <div style="display:flex;align-items:center;gap:12px">
         <div class="avatar">${iniciaisDe(p.iniciais)}</div>
@@ -1007,30 +1122,34 @@ function viewPacientes(){
       </div>
       <div class="tags">${p.demandas.map(d=>`<span class="chip demanda">${esc(d)}</span>`).join('')}</div>
       ${p.obs?`<div class="why">${esc(p.obs)}</div>`:''}
-    </div>`).join('')}</div>`:`<div class="card empty">Nenhum paciente ainda. Clica em "Novo paciente".</div>`}`;
+    </div>`).join('')}</div>`:`<div class="card empty">Nenhum paciente encontrado pra essa busca.</div>`):`<div class="card empty">Nenhum paciente ainda. Clica em "Novo paciente".</div>`;
 }
 function viewJogos(){
   return `
   <div style="display:flex;align-items:center;margin-bottom:22px;gap:16px;flex-wrap:wrap">
-    <div><h2 class="h2 display">Banco de jogos</h2><p class="muted">A tua "planilha" — cada jogo com as áreas que trabalha.</p></div>
-    <input class="input" id="in-busca" style="width:170px;margin-left:auto" placeholder="Buscar" value="${esc(state.busca)}">
+    <div><h2 class="h2 display">Banco de jogos e recursos</h2><p class="muted">Jogos trabalham funções cognitivas; recursos são atividades projetivas que abrem o mundo subjetivo da criança.</p></div>
+    <input class="input" id="in-busca" style="width:170px;margin-left:auto" placeholder="Buscar" value="${esc(state.buscaJogos)}">
     <button class="btn" id="btn-exemplos">${I.plus} Carregar meus jogos</button>
     <button class="btn" id="btn-import">${I.upload} Importar (IA)</button>
-    <button class="btn primary" id="btn-novo-jogo">${I.plus} Novo jogo</button>
+    <button class="btn primary" id="btn-novo-jogo">${I.plus} Novo item</button>
+  </div>
+  <div class="toggles" id="ft-tipo" style="margin-bottom:16px">
+    ${[['todos','Todos'],['jogo','Jogos'],['recurso','Recursos']].map(([v,l])=>`<button type="button" class="toggle ${(state.filtroTipo||'todos')===v?'on':''}" data-ft="${v}">${l}</button>`).join('')}
   </div>
   <div id="jogos-grid">${gridJogos()}</div>`;
 }
 function gridJogos(){
-  const f=state.jogos.filter(g=>g.nome.toLowerCase().includes(state.busca.toLowerCase())||g.areas.some(a=>a.toLowerCase().includes(state.busca.toLowerCase())));
-  return state.jogos.length?`<div class="grid">${f.map(g=>`
+  const ft=state.filtroTipo||'todos';
+  const f=state.jogos.filter(g=>(ft==='todos'||(g.tipo||'jogo')===ft)&&(g.nome.toLowerCase().includes(state.buscaJogos.toLowerCase())||g.areas.some(a=>a.toLowerCase().includes(state.buscaJogos.toLowerCase()))));
+  return state.jogos.length?(f.length?`<div class="grid">${f.map(g=>`
     <div class="card item-card">
       <div style="display:flex;align-items:flex-start">
-        <div><b style="font-size:15px">${esc(g.nome)}</b><div class="muted">${g.max?`${g.min}–${g.max}`:`${g.min}+`} anos</div></div>
+        <div><b style="font-size:15px">${esc(g.nome)}</b>${(g.tipo||'jogo')==='recurso'?` <span class="chip demanda" style="vertical-align:middle">${I.spark} recurso</span>`:''}<div class="muted">${g.max?`${g.min}–${g.max}`:`${g.min}+`} anos</div></div>
         <div class="item-actions"><button class="btn ghost" style="padding:7px" data-edit-jogo="${g.id}">${I.edit}</button><button class="btn ghost" style="padding:7px" data-del-jogo="${g.id}">${I.trash}</button></div>
       </div>
       <div class="tags">${g.areas.map(a=>`<span class="chip">${esc(a)}</span>`).join('')}</div>
       ${g.obs?`<div class="why">${esc(g.obs)}</div>`:''}
-    </div>`).join('')}</div>`:`<div class="card empty">Banco ainda vazio. Clica em <b>"Carregar meus jogos"</b> aqui em cima pra subir a sua lista.</div>`;
+    </div>`).join('')}</div>`:`<div class="card empty">Nenhum item nesse filtro${state.buscaJogos?' pra essa busca':''}.</div>`):`<div class="card empty">Banco ainda vazio. Clica em <b>"Carregar meus jogos"</b> aqui em cima pra subir a sua lista.</div>`;
 }
 
 /* ============================ EVENTOS ============================ */
@@ -1051,8 +1170,7 @@ function wire(){
   document.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>toggleSessao(b.dataset.rm));
   document.querySelectorAll('[data-mv]').forEach(b=>b.onclick=()=>move(b.dataset.mv,+b.dataset.d));
 
-  const filtro=$('#sel-filtro'); if(filtro)filtro.onchange=()=>{state.filtroPac=filtro.value;render()};
-  document.querySelectorAll('[data-open-sess]').forEach(b=>b.onclick=()=>modalSessao(b.dataset.openSess));
+  wireSessoesView();
 
   const evo=$('#sel-evo'); if(evo)evo.onchange=()=>{state.evoPid=evo.value;render()};
   const rel=$('#btn-relatorio'); if(rel)rel.onclick=abrirRelatorio;
@@ -1062,17 +1180,46 @@ function wire(){
   const go=$('#btn-gcal-out'); if(go)go.onclick=()=>{if(confirm('Desconectar da Google Agenda?')){state.gcal={connected:false,token:null,events:[],loading:false,erro:null};render()}};
 
   const bp=$('#btn-novo-pac'); if(bp)bp.onclick=()=>modalPaciente(null);
-  document.querySelectorAll('[data-edit-pac]').forEach(b=>b.onclick=()=>modalPaciente(state.pacientes.find(p=>p.id===b.dataset.editPac)));
-  document.querySelectorAll('[data-del-pac]').forEach(b=>b.onclick=()=>{if(confirm('Excluir este paciente?'))excluirPaciente(b.dataset.delPac)});
+  const buscaPac=$('#in-busca-pac'); if(buscaPac)buscaPac.oninput=()=>{
+    state.buscaPac=buscaPac.value;
+    const grid=$('#pac-grid'); if(grid){grid.innerHTML=gridPac();wirePacGrid()}
+  };
+  wirePacGrid();
 
   const busca=$('#in-busca'); if(busca)busca.oninput=()=>{
-    state.busca=busca.value;
+    state.buscaJogos=busca.value;
     const grid=$('#jogos-grid'); if(grid){grid.innerHTML=gridJogos();wireJogosGrid()}
   };
+  document.querySelectorAll('#ft-tipo .toggle').forEach(b=>b.onclick=()=>{
+    state.filtroTipo=b.dataset.ft;
+    document.querySelectorAll('#ft-tipo .toggle').forEach(x=>x.classList.toggle('on',x.dataset.ft===state.filtroTipo));
+    const grid=$('#jogos-grid'); if(grid){grid.innerHTML=gridJogos();wireJogosGrid()}
+  });
   const bj=$('#btn-novo-jogo'); if(bj)bj.onclick=()=>modalJogo(null);
   const bex=$('#btn-exemplos'); if(bex)bex.onclick=popularExemplos;
   const bim=$('#btn-import'); if(bim)bim.onclick=abrirImport;
   wireJogosGrid();
+}
+function wireSessoesView(){
+  const container=$('#sessoes-view'); if(!container)return;
+  const refresh=()=>{ container.innerHTML=viewSessoesBody(); wireSessoesView(); };
+  const filtro=$('#sel-filtro'); if(filtro)filtro.onchange=()=>{state.filtroPac=filtro.value;refresh()};
+  document.querySelectorAll('[data-open-sess]').forEach(b=>b.onclick=()=>modalSessao(b.dataset.openSess));
+  document.querySelectorAll('.chk-sess').forEach(c=>c.onclick=e=>{e.stopPropagation();
+    if(c.checked)state.selDia.add(c.dataset.id); else state.selDia.delete(c.dataset.id);
+    refresh();
+  });
+  document.querySelectorAll('.chk-dia-all').forEach(c=>c.onclick=e=>{e.stopPropagation();
+    const dia=c.dataset.dia;
+    const idsDoDia=state.sessoes.filter(s=>(s.data||'—')===dia&&(state.filtroPac==='todos'||!state.filtroPac||s.pid===state.filtroPac)).map(s=>s.id);
+    if(c.checked)idsDoDia.forEach(id=>state.selDia.add(id)); else idsDoDia.forEach(id=>state.selDia.delete(id));
+    refresh();
+  });
+  const bpd=$('#btn-print-dia'); if(bpd)bpd.onclick=()=>modalImprimirSelecionadas();
+}
+function wirePacGrid(){
+  document.querySelectorAll('[data-edit-pac]').forEach(b=>b.onclick=()=>modalPaciente(state.pacientes.find(p=>p.id===b.dataset.editPac)));
+  document.querySelectorAll('[data-del-pac]').forEach(b=>b.onclick=()=>{if(confirm('Excluir este paciente?'))excluirPaciente(b.dataset.delPac)});
 }
 function wireJogosGrid(){
   document.querySelectorAll('[data-edit-jogo]').forEach(b=>b.onclick=()=>modalJogo(state.jogos.find(g=>g.id===b.dataset.editJogo)));
@@ -1089,44 +1236,80 @@ function openModal(html){closeModal();const d=document.createElement('div');d.cl
 function modalPaciente(p){
   const editing=!!p; const f=p?{...p}:{iniciais:"",idade:7,demandas:[],obs:""};
   const sel=new Set(f.demandas);
-  const extras=f.demandas.filter(d=>!DEMANDAS.some(x=>x.nome===d));
+  const efetivas=demandasEfetivas();
+  const mapaBase=mapaDemandas();
+  const mapaLocal={}; // nome -> Set(areas) só das demandas personalizadas
+  f.demandas.forEach(n=>{ if(!ehDemandaBase(n)) mapaLocal[n]=new Set(mapaBase.get(n)||[]); });
+  const extras=f.demandas.filter(d=>!efetivas.some(x=>x.nome===d));
   openModal(`
     <div class="modal-head"><b class="display" style="font-size:19px;color:var(--terra)">${editing?'Editar':'Novo'} paciente</b><button class="btn ghost" id="mx" style="margin-left:auto;padding:6px">${I.x}</button></div>
     <div class="modal-body">
       <div class="row"><div class="grow" style="flex:2"><label class="flabel">Nome completo</label><input class="input" id="f-ini" value="${esc(f.iniciais)}" placeholder="ex: Maria Eduarda Silva"></div>
       <div class="grow"><label class="flabel">Idade</label><input class="input" id="f-idade" type="number" min="2" max="17" value="${f.idade}"></div></div>
       <div><label class="flabel">Demanda(s) principal(is)</label>
-        <div class="toggles" id="f-dem">${DEMANDAS.map(d=>`<button type="button" class="toggle ${sel.has(d.nome)?'on':''}" data-t="${esc(d.nome)}">${esc(d.nome)}</button>`).join('')}${extras.map(n=>`<button type="button" class="toggle on" data-t="${esc(n)}">${esc(n)}</button>`).join('')}</div>
+        <div class="toggles" id="f-dem">${efetivas.map(d=>`<button type="button" class="toggle ${sel.has(d.nome)?'on':''}" data-t="${esc(d.nome)}">${esc(d.nome)}</button>`).join('')}${extras.map(n=>`<button type="button" class="toggle on" data-t="${esc(n)}">${esc(n)}</button>`).join('')}</div>
         <div class="row" style="margin-top:9px"><input class="input" id="f-dem-novo" placeholder="Outra demanda… (ex: Seletividade alimentar)" style="flex:1"><button type="button" class="btn sm" id="f-dem-add">${I.plus} Adicionar</button></div>
+        <div id="f-dem-areas" style="margin-top:12px"></div>
       </div>
       <div><label class="flabel">Observações</label><input class="input" id="f-obs" value="${esc(f.obs)}" placeholder="opcional"></div>
     </div>
     <div class="modal-foot"><button class="btn" id="mcancel">Cancelar</button><button class="btn primary" id="msave">Salvar</button></div>`);
   $('#mx').onclick=closeModal; $('#mcancel').onclick=closeModal;
   const toggleGroup=$('#f-dem');
-  function wireToggle(b){b.onclick=()=>{const n=b.dataset.t;if(sel.has(n)){sel.delete(n);b.classList.remove('on')}else{sel.add(n);b.classList.add('on')}}}
+  function renderDemAreas(){
+    const box=$('#f-dem-areas');
+    const custom=[...sel].filter(n=>!ehDemandaBase(n));
+    if(!custom.length){box.innerHTML='';return}
+    box.innerHTML=`<div class="plano-jogo" style="padding:12px">
+      <div class="muted" style="margin-bottom:10px">Essas demandas foram criadas por você. Marque as funções cognitivas que cada uma trabalha — é isso que faz elas <b>casarem com os jogos</b> do banco:</div>
+      ${custom.map(n=>{
+        if(!mapaLocal[n])mapaLocal[n]=new Set(mapaBase.get(n)||[]);
+        return `<div style="margin-bottom:12px"><b style="font-size:13px">${esc(n)}</b>
+          <div class="toggles" data-dem-area="${esc(n)}" style="margin-top:6px">${AREAS.map(a=>`<button type="button" class="toggle ${mapaLocal[n].has(a)?'on':''}" data-a="${esc(a)}">${esc(a)}</button>`).join('')}</div></div>`;
+      }).join('')}</div>`;
+    box.querySelectorAll('[data-dem-area]').forEach(grp=>{
+      const nome=grp.dataset.demArea;
+      grp.querySelectorAll('.toggle').forEach(b=>b.onclick=()=>{
+        const a=b.dataset.a;
+        if(mapaLocal[nome].has(a)){mapaLocal[nome].delete(a);b.classList.remove('on')}
+        else{mapaLocal[nome].add(a);b.classList.add('on')}
+      });
+    });
+  }
+  function wireToggle(b){b.onclick=()=>{const n=b.dataset.t;if(sel.has(n)){sel.delete(n);b.classList.remove('on')}else{sel.add(n);b.classList.add('on')}renderDemAreas()}}
   document.querySelectorAll('#f-dem .toggle').forEach(wireToggle);
   function addCustomDemanda(){
     const inp=$('#f-dem-novo'); const val=inp.value.trim(); if(!val)return;
     if([...toggleGroup.querySelectorAll('.toggle')].some(b=>b.dataset.t.toLowerCase()===val.toLowerCase())){inp.value='';return}
     const b=document.createElement('button'); b.type='button'; b.className='toggle on'; b.dataset.t=val; b.textContent=val;
-    wireToggle(b); toggleGroup.appendChild(b); sel.add(val); inp.value=''; inp.focus();
+    wireToggle(b); toggleGroup.appendChild(b); sel.add(val); inp.value=''; inp.focus(); renderDemAreas();
   }
   $('#f-dem-add').onclick=addCustomDemanda;
   $('#f-dem-novo').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();addCustomDemanda()}};
-  $('#msave').onclick=()=>{
+  renderDemAreas();
+  $('#msave').onclick=async()=>{
     const ini=$('#f-ini').value.trim(); if(!ini)return $('#f-ini').focus();
-    salvarPaciente({id:f.id,iniciais:ini,idade:Number($('#f-idade').value)||7,demandas:[...sel],obs:$('#f-obs').value.trim()});
+    const custom=[...sel].filter(n=>!ehDemandaBase(n)).map(n=>({nome:n,areas:[...(mapaLocal[n]||[])]}));
+    await salvarDemandasCustom(custom);
+    const idade=Math.min(17,Math.max(2,Number($('#f-idade').value)||7));
+    salvarPaciente({id:f.id,iniciais:ini,idade,demandas:[...sel],obs:$('#f-obs').value.trim()});
   };
 }
 function modalJogo(g){
-  const editing=!!g; const f=g?{...g}:{nome:"",areas:[],min:5,max:null,obs:""};
+  const editing=!!g; const f=g?{...g}:{nome:"",areas:[],min:5,max:null,obs:"",tipo:"jogo"};
+  let tipo=f.tipo||'jogo';
   const sel=new Set(f.areas);
   const extras=f.areas.filter(a=>!AREAS.includes(a));
   openModal(`
-    <div class="modal-head"><b class="display" style="font-size:19px;color:var(--terra)">${editing?'Editar':'Novo'} jogo</b><button class="btn ghost" id="mx" style="margin-left:auto;padding:6px">${I.x}</button></div>
+    <div class="modal-head"><b class="display" style="font-size:19px;color:var(--terra)">${editing?'Editar':'Novo'} item</b><button class="btn ghost" id="mx" style="margin-left:auto;padding:6px">${I.x}</button></div>
     <div class="modal-body">
-      <div><label class="flabel">Nome do jogo</label><input class="input" id="f-nome" value="${esc(f.nome)}" placeholder="ex: Uno Flip"></div>
+      <div><label class="flabel">Tipo</label>
+        <div class="toggles" id="f-tipo">
+          <button type="button" class="toggle ${tipo==='jogo'?'on':''}" data-tp="jogo">${I.brain} Jogo <span class="muted" style="font-weight:400">· função cognitiva</span></button>
+          <button type="button" class="toggle ${tipo==='recurso'?'on':''}" data-tp="recurso">${I.spark} Recurso <span class="muted" style="font-weight:400">· atividade projetiva/subjetiva</span></button>
+        </div>
+      </div>
+      <div><label class="flabel" id="f-nome-lbl">${tipo==='recurso'?'Nome do recurso':'Nome do jogo'}</label><input class="input" id="f-nome" value="${esc(f.nome)}" placeholder="ex: Uno Flip"></div>
       <div class="row"><div class="grow"><label class="flabel">Idade mínima</label><input class="input" id="f-min" type="number" min="2" max="17" value="${f.min}"></div>
       <div class="grow"><label class="flabel">Idade máxima (opcional)</label><input class="input" id="f-max" type="number" min="2" max="17" value="${f.max??''}" placeholder="—"></div></div>
       <div><label class="flabel">Áreas que trabalha</label>
@@ -1137,6 +1320,11 @@ function modalJogo(g){
     </div>
     <div class="modal-foot"><button class="btn" id="mcancel">Cancelar</button><button class="btn primary" id="msave">Salvar</button></div>`);
   $('#mx').onclick=closeModal; $('#mcancel').onclick=closeModal;
+  document.querySelectorAll('#f-tipo .toggle').forEach(b=>b.onclick=()=>{
+    tipo=b.dataset.tp;
+    document.querySelectorAll('#f-tipo .toggle').forEach(x=>x.classList.toggle('on',x.dataset.tp===tipo));
+    const lbl=$('#f-nome-lbl'); if(lbl)lbl.textContent=tipo==='recurso'?'Nome do recurso':'Nome do jogo';
+  });
   const toggleGroup=$('#f-areas');
   function wireToggle(b){b.onclick=()=>{const n=b.dataset.t;if(sel.has(n)){sel.delete(n);b.classList.remove('on')}else{sel.add(n);b.classList.add('on')}}}
   document.querySelectorAll('#f-areas .toggle').forEach(wireToggle);
@@ -1151,12 +1339,47 @@ function modalJogo(g){
   $('#msave').onclick=()=>{
     const nome=$('#f-nome').value.trim(); if(!nome)return $('#f-nome').focus();
     const mx=$('#f-max').value;
-    salvarJogo({id:f.id,nome,areas:[...sel],min:Number($('#f-min').value)||2,max:mx?Number(mx):null,obs:$('#f-obs').value.trim()});
+    salvarJogo({id:f.id,nome,areas:[...sel],min:Number($('#f-min').value)||2,max:mx?Number(mx):null,obs:$('#f-obs').value.trim(),tipo});
   };
+}
+function modalImprimirSelecionadas(){
+  const ids=[...state.selDia];
+  if(!ids.length)return;
+  const sess=state.sessoes.filter(s=>ids.includes(s.id)).sort((a,b)=>{
+    if(a.data!==b.data)return (a.data||'').localeCompare(b.data||'');
+    const na=state.pacientes.find(p=>p.id===a.pid)?.iniciais||'';
+    const nb=state.pacientes.find(p=>p.id===b.pid)?.iniciais||'';
+    return na.localeCompare(nb);
+  });
+  const porDia=new Map(); sess.forEach(s=>{const k=s.data||'—'; if(!porDia.has(k))porDia.set(k,[]); porDia.get(k).push(s)});
+  const blocoSessao=s=>{
+    const p=state.pacientes.find(x=>x.id===s.pid);
+    return `<div class="plano-jogo" style="padding:14px;margin-bottom:12px;page-break-inside:avoid">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div class="avatar" style="width:34px;height:34px;font-size:13px">${p?iniciaisDe(p.iniciais):'—'}</div>
+        <div><b style="font-size:14px">${esc(p?p.iniciais:'—')}</b>${p?`<span class="muted"> · ${p.idade} anos</span>`:''}</div>
+      </div>
+      ${s.objetivo?`<div style="font-size:13.5px;margin-bottom:6px"><b>Objetivo:</b> ${esc(s.objetivo)}</div>`:''}
+      <div style="font-size:13.5px"><b>Jogos:</b> ${s.jogos.map(j=>esc(j.nome)).join(', ')||'—'}</div>
+      ${s.nota?`<div style="font-size:13px;margin-top:6px" class="muted">${esc(s.nota)}</div>`:''}
+    </div>`;
+  };
+  openModal(`
+    <div class="modal-head"><b class="display" style="font-size:19px;color:var(--terra)">Planejamento — ${sess.length} sessão${sess.length>1?'ões':''}</b><button class="btn ghost" id="mx" style="margin-left:auto;padding:6px">${I.x}</button></div>
+    <div class="modal-body">
+      ${[...porDia.keys()].map(dia=>`
+        <h4 class="display" style="font-size:15px;color:var(--terra);margin-bottom:10px">${fmtDiaLongo(dia)}</h4>
+        ${porDia.get(dia).map(blocoSessao).join('')}
+      `).join('')}
+    </div>
+    <div class="modal-foot"><button class="btn" id="mcancel">Fechar</button><button class="btn primary" id="mi-print">${I.print} Imprimir</button></div>`);
+  $('#mx').onclick=closeModal; $('#mcancel').onclick=closeModal;
+  $('#mi-print').onclick=()=>window.print();
 }
 function modalSessao(id){
   const s=state.sessoes.find(x=>x.id===id); if(!s)return;
   const p=state.pacientes.find(x=>x.id===s.pid);
+  const rc=s.reflexao||{};
   openModal(`
     <div class="modal-head"><b class="display" style="font-size:19px;color:var(--terra)">Sessão · ${fmtData(s.data)}</b><button class="btn ghost" id="mx" style="margin-left:auto;padding:6px">${I.x}</button></div>
     <div class="modal-body">
@@ -1171,6 +1394,19 @@ function modalSessao(id){
         ${s.jogos.map(j=>`<div class="plano-jogo"><b>${esc(j.nome)}</b>
           <textarea class="input" data-r="${j.id}" rows="2" style="margin-top:8px;resize:vertical" placeholder="Como reagiu / observações">${esc(j.reacao||'')}</textarea></div>`).join('')}
       </div>
+      <details class="plano-jogo" style="padding:14px" ${(rc.observacao||rc.hipotese||rc.ajuste||rc.proximo)?'open':''}>
+        <summary style="cursor:pointer;font-weight:700;color:var(--terra);display:flex;align-items:center;gap:7px;list-style:none">${I.brain} Raciocínio clínico <span class="muted" style="font-weight:400">(opcional — ajuda a estruturar hipóteses)</span></summary>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-top:14px">
+          <div><label class="flabel" style="margin:0 0 5px">O que você observou? <span class="muted">comportamento, afeto, vínculo, corpo</span></label>
+            <textarea class="input" id="rc-obs" rows="2" style="resize:vertical" placeholder="o que chamou atenção hoje…">${esc(rc.observacao||'')}</textarea></div>
+          <div><label class="flabel" style="margin:0 0 5px">Que hipótese isso levanta? <span class="muted">sobre a demanda / o que pode estar por trás</span></label>
+            <textarea class="input" id="rc-hip" rows="2" style="resize:vertical" placeholder="isso pode indicar que…">${esc(rc.hipotese||'')}</textarea></div>
+          <div><label class="flabel" style="margin:0 0 5px">Confirmou ou mudou seu plano? <span class="muted">o que a sessão te disse sobre a intervenção</span></label>
+            <textarea class="input" id="rc-aj" rows="2" style="resize:vertical" placeholder="mantenho / ajusto porque…">${esc(rc.ajuste||'')}</textarea></div>
+          <div><label class="flabel" style="margin:0 0 5px">Próximo passo <span class="muted">o que investigar ou testar na próxima</span></label>
+            <textarea class="input" id="rc-prox" rows="2" style="resize:vertical" placeholder="na próxima sessão…">${esc(rc.proximo||'')}</textarea></div>
+        </div>
+      </details>
       <div><label class="flabel">Nota geral</label><input class="input" id="s-nota" value="${esc(s.nota||'')}" placeholder="opcional"></div>
       <label style="display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:600;cursor:pointer">
         <input type="checkbox" id="s-real" ${s.status==='realizada'?'checked':''} style="width:18px;height:18px;accent-color:var(--terra)"> Marcar como realizada</label>
@@ -1185,15 +1421,17 @@ function modalSessao(id){
   $('#s-save').onclick=async()=>{
     const jogos=s.jogos.map(j=>({...j}));
     document.querySelectorAll('[data-r]').forEach(t=>{const j=jogos.find(x=>x.id===t.dataset.r);if(j)j.reacao=t.value.trim()});
-    const patch={data:$('#s-data').value||s.data,objetivo:$('#s-obj').value.trim(),nota:$('#s-nota').value.trim(),status:$('#s-real').checked?'realizada':'planejada',jogos};
-    const {data,error}=await sb.from('sessoes').update(patch).eq('id',id).select().single();
+    const rf={observacao:$('#rc-obs').value.trim(),hipotese:$('#rc-hip').value.trim(),ajuste:$('#rc-aj').value.trim(),proximo:$('#rc-prox').value.trim()};
+    const reflexao=Object.values(rf).some(v=>v)?rf:null;
+    const patch={data:$('#s-data').value||s.data,objetivo:$('#s-obj').value.trim(),nota:$('#s-nota').value.trim(),status:$('#s-real').checked?'realizada':'planejada',jogos,reflexao};
+    const {data,error}=await safeWrite(pl=>sb.from('sessoes').update(pl).eq('id',id).select().single(),patch,['reflexao']);
     if(error)return toast(error.message,true);
     state.sessoes=state.sessoes.map(x=>x.id===id?sessFromRow(data):x);
     closeModal();render();
   };
 }
 function openConfig(){
-  const key=lsGet(KKEY)||""; const model=lsGet(MKEY)||"gemini-2.5-flash";
+  const model=modeloAtual();
   const nome=state.user?.user_metadata?.nome||"";
   openModal(`
     <div class="modal-head"><b class="display" style="font-size:19px;color:var(--terra)">Configurações</b><button class="btn ghost" id="mx" style="margin-left:auto;padding:6px">${I.x}</button></div>
@@ -1208,6 +1446,7 @@ function openConfig(){
 
       <div class="set-sec">
         <h5>${I.gear} Segurança</h5>
+        <div><label class="flabel">Senha atual</label><input class="input" id="c-pass0" type="password" placeholder="confirme pra trocar a senha"></div>
         <div class="row">
           <div class="grow"><label class="flabel">Nova senha</label><input class="input" id="c-pass1" type="password" placeholder="mínimo 6 caracteres"></div>
           <div class="grow"><label class="flabel">Repetir nova senha</label><input class="input" id="c-pass2" type="password" placeholder="repita"></div>
@@ -1217,14 +1456,13 @@ function openConfig(){
 
       <div class="set-sec">
         <h5>${I.spark} Inteligência artificial</h5>
-        <p class="muted">Usa a API gratuita do Google Gemini. A chave fica salva só neste navegador.</p>
-        <div><label class="flabel">Chave da API (AIza…)</label><input class="input" id="f-key" type="password" value="${esc(key)}" placeholder="AIzaSy..."></div>
+        <p class="muted">A IA já vem configurada na plataforma — não precisa de chave. É usada na <b>Sugestão inteligente</b> (match entre jogo e paciente) e na importação de planilhas.</p>
         <div><label class="flabel">Modelo</label><select id="f-model">
-          <option value="gemini-2.5-flash" ${model.includes('flash')&&!model.includes('lite')?'selected':''}>Gemini 2.5 Flash — recomendado (grátis)</option>
-          <option value="gemini-2.5-flash-lite" ${model.includes('lite')?'selected':''}>Gemini 2.5 Flash-Lite — mais rápida (grátis)</option>
+          <option value="gemini-3.5-flash" ${model.includes('flash')&&!model.includes('lite')?'selected':''}>Gemini 3.5 Flash — recomendado</option>
+          <option value="gemini-3.1-flash-lite" ${model.includes('lite')?'selected':''}>Gemini 3.1 Flash-Lite — mais rápida</option>
         </select></div>
-        <p class="muted">Chave grátis em aistudio.google.com/apikey. Na camada gratuita, o Google pode usar o conteúdo enviado (idade, demanda, observações) pra melhorar os modelos — o nome do paciente nunca é enviado.</p>
-        <button class="btn sm" id="c-save-ia" style="align-self:flex-start">${I.check} Salvar IA</button>
+        <p class="muted">Para melhorar as sugestões, o sistema envia idade, demanda e observações do paciente ao modelo — o <b>nome do paciente nunca é enviado</b>.</p>
+        <button class="btn sm" id="c-save-ia" style="align-self:flex-start">${I.check} Salvar modelo</button>
       </div>
 
       <div class="set-sec">
@@ -1246,17 +1484,20 @@ function openConfig(){
     state.user=data.user; toast("Nome atualizado."); render(); openConfig();
   };
   $('#c-save-pass').onclick=async()=>{
-    const p1=$('#c-pass1').value,p2=$('#c-pass2').value;
+    const p0=$('#c-pass0').value, p1=$('#c-pass1').value,p2=$('#c-pass2').value;
+    if(!p0)return toast("Digite sua senha atual pra confirmar.",true);
     if(p1.length<6)return toast("A senha precisa de pelo menos 6 caracteres.",true);
     if(p1!==p2)return toast("As senhas não conferem.",true);
+    const {error:erroAtual}=await sb.auth.signInWithPassword({email:state.user.email,password:p0});
+    if(erroAtual)return toast("Senha atual incorreta.",true);
     const {error}=await sb.auth.updateUser({password:p1});
     if(error)return toast(error.message,true);
-    $('#c-pass1').value='';$('#c-pass2').value='';
+    $('#c-pass0').value='';$('#c-pass1').value='';$('#c-pass2').value='';
     toast("Senha alterada com sucesso.");
   };
-  $('#c-save-ia').onclick=()=>{lsSet(KKEY,$('#f-key').value.trim());lsSet(MKEY,$('#f-model').value);toast("Configuração da IA salva.")};
+  $('#c-save-ia').onclick=()=>{lsSet(MKEY,$('#f-model').value);toast("Modelo salvo.")};
   $('#c-backup').onclick=()=>{
-    const payload={exportado_em:new Date().toISOString(),pacientes:state.pacientes,jogos:state.jogos,sessoes:state.sessoes};
+    const payload={exportado_em:new Date().toISOString(),pacientes:state.pacientes,jogos:state.jogos,sessoes:state.sessoes,demandas:state.demandas};
     const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);
     a.download=`${BRAND.nome.toLowerCase()}-backup-${hoje()}.json`;a.click();URL.revokeObjectURL(a.href);
@@ -1266,30 +1507,25 @@ function openConfig(){
 }
 
 
-/* ============================ IA (BYOK — Google Gemini) ============================ */
-async function chamarGemini(prompt,key,model,maxTokens){
-  const url=`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
-  const r=await fetch(url,{
+/* ============================ IA (via Edge Function — chave fica no servidor) ============================ */
+const IA_FN_URL = SUPABASE_URL + "/functions/v1/gemini";
+async function chamarGemini(prompt,model,maxTokens){
+  const token=(await sb.auth.getSession()).data.session?.access_token;
+  if(!token)throw new Error("faça login novamente");
+  const r=await fetch(IA_FN_URL,{
     method:"POST",
-    headers:{"content-type":"application/json","x-goog-api-key":key},
-    body:JSON.stringify({
-      contents:[{parts:[{text:prompt}]}],
-      generationConfig:{maxOutputTokens:maxTokens,responseMimeType:"application/json",thinkingConfig:{thinkingBudget:0}}
-    })
+    headers:{"content-type":"application/json","apikey":SUPABASE_ANON_KEY,"Authorization":"Bearer "+token},
+    body:JSON.stringify({prompt,model,maxTokens})
   });
-  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||("HTTP "+r.status))}
-  const data=await r.json();
-  const cand=data.candidates?.[0];
-  if(!cand)throw new Error("resposta vazia da IA");
-  const text=(cand.content?.parts||[]).map(p=>p.text||"").join("\n");
-  if(!text.trim())throw new Error(cand.finishReason==="MAX_TOKENS"?"resposta cortada — tente novamente":"resposta vazia da IA");
+  const data=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(data.error||("HTTP "+r.status));
+  const text=data.text||"";
+  if(!text.trim())throw new Error("resposta vazia da IA");
   return JSON.parse(text.replace(/```json|```/g,"").trim());
 }
 async function pedirIA(){
   const p=state.pacientes.find(x=>x.id===state.pid); if(!p)return;
-  const key=lsGet(KKEY);
-  if(!key){state.ai={loading:false,result:null,error:"Adicione sua chave da API na engrenagem (canto superior) pra ligar a sugestão automática."};render();return}
-  const model=lsGet(MKEY)||"gemini-2.5-flash";
+  const model=modeloAtual();
   state.ai={loading:true,result:null,error:null};render();
   try{
     const usoMap=usoPorNome(p.id);
@@ -1308,7 +1544,7 @@ Leia as DESCRIÇÕES e escolha de 2 a 4 itens DESTE catálogo cujos objetivos me
 
 Responda SOMENTE com JSON válido, neste formato:
 {"objetivo":"...","jogos":[{"nome":"...","motivo":"..."}],"observacao":"..."}`;
-    const parsed=await chamarGemini(prompt,key,model,2048);
+    const parsed=await chamarGemini(prompt,model,2048);
     state.ai={loading:false,result:parsed,error:null};render();
   }catch(e){ state.ai={loading:false,result:null,error:"Não consegui gerar agora: "+e.message};render(); }
 }
@@ -1316,8 +1552,6 @@ Responda SOMENTE com JSON válido, neste formato:
 /* ============================ IMPORTAR PLANILHA (IA) ============================ */
 function abrirImport(){
   if(typeof XLSX==="undefined")return toast("Leitor de planilha não carregou (sem internet?).",true);
-  const key=lsGet(KKEY);
-  if(!key){toast("Adicione sua chave da IA na engrenagem primeiro.",true);return openConfig();}
   const inp=document.createElement('input');inp.type='file';inp.accept='.xlsx,.xls,.csv';
   inp.onchange=()=>{const f=inp.files[0];if(f)processarArquivo(f)};
   inp.click();
@@ -1330,7 +1564,7 @@ async function processarArquivo(file){
     const ws=wb.Sheets[wb.SheetNames[0]];
     const rows=XLSX.utils.sheet_to_json(ws,{defval:''});
     if(!rows.length){closeModal();return toast("A planilha parece vazia.",true)}
-    const key=lsGet(KKEY), model=lsGet(MKEY)||"gemini-2.5-flash";
+    const model=modeloAtual();
     const prompt=`Você recebe linhas de uma planilha de jogos terapêuticos (JSON) e converte para o formato do sistema.
 
 Áreas válidas (use SOMENTE estas, mapeando o texto da planilha para as mais próximas):
@@ -1349,7 +1583,7 @@ ${JSON.stringify(rows).slice(0,12000)}
 
 Responda SOMENTE com um array JSON:
 [{"nome":"...","areas":["..."],"idade_min":6,"idade_max":null,"obs":"..."}]`;
-    let arr=await chamarGemini(prompt,key,model,8192);
+    let arr=await chamarGemini(prompt,model,8192);
     if(!Array.isArray(arr))throw new Error("resposta inesperada da IA");
     arr=arr.map(g=>({nome:String(g.nome||"").trim(),areas:(g.areas||[]).filter(a=>AREAS.includes(a)),min:Number(g.idade_min)||4,max:g.idade_max?Number(g.idade_max):null,obs:String(g.obs||"").trim()})).filter(g=>g.nome);
     if(!arr.length){closeModal();return toast("A IA não encontrou jogos na planilha.",true)}
