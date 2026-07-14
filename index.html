@@ -20,29 +20,35 @@
 body{font-family:'Nunito Sans',system-ui,sans-serif;color:var(--ink);background:var(--paper);min-height:100vh;line-height:1.5;-webkit-font-smoothing:antialiased}
 .display{font-family:'Quicksand',sans-serif;letter-spacing:-.005em}
 
-.top{background:var(--card);position:sticky;top:0;z-index:20;border-bottom:1px solid var(--line)}
-.top-in{max-width:1120px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.logo{display:flex;align-items:center;gap:11px}
+.shell{display:flex;align-items:stretch;min-height:100vh}
+.sidebar{width:240px;flex-shrink:0;background:var(--card);border-right:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column;gap:2px;position:sticky;top:0;height:100vh;overflow-y:auto;z-index:25}
+.sidebar .logo-svg{padding:6px 10px 26px}
+.side-nav{display:flex;flex-direction:column;gap:3px}
+.side-link{border:0;background:transparent;font-family:inherit;font-size:14px;font-weight:700;color:var(--ink-soft);padding:11px 14px;border-radius:12px;cursor:pointer;display:flex;align-items:center;gap:12px;text-align:left;width:100%;transition:background .15s,color .15s}
+.side-link svg{width:18px;height:18px;flex-shrink:0}
+.side-link:hover{background:var(--paper);color:var(--primary-deep)}
+.side-link.on{background:var(--primary-tint);color:var(--primary-deep)}
+.side-foot{margin-top:auto;padding-top:12px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+.side-link.danger{color:#C0392B}
+.side-link.danger:hover{background:#FBEAE7;color:#C0392B}
+.content{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{background:var(--card);position:sticky;top:0;z-index:20;border-bottom:1px solid var(--line);padding:14px 28px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.tb-greet{font-size:15px;color:var(--ink-soft);white-space:nowrap;margin-right:auto}
+.tb-greet b{color:var(--ink)}
 .mark{width:42px;height:42px;border-radius:13px;background:var(--primary-tint);display:grid;place-items:center;flex-shrink:0}
 .title{font-size:22px;font-weight:700;color:var(--primary)}
 .sub{font-size:12px;color:var(--ink-soft)}
-.nav{display:flex;gap:4px;margin-left:auto;background:var(--paper);padding:4px;border-radius:14px}
-.nav button{border:0;background:transparent;font-family:inherit;font-size:13.5px;font-weight:700;color:var(--ink-soft);padding:8px 14px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background .15s,color .15s}
-.nav button:hover{color:var(--primary-deep)}
-.nav button.on{background:var(--primary);color:#fff}
-.owner{display:flex;align-items:center;gap:9px}
-.owner-av{width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;display:grid;place-items:center;font-weight:700;font-size:13px;font-family:'Quicksand',sans-serif;flex-shrink:0}
+.icon-btn{border:1px solid var(--line);background:var(--card);border-radius:10px;width:38px;height:38px;display:grid;place-items:center;cursor:pointer;color:var(--ink-soft);flex-shrink:0}
+.icon-btn:hover{border-color:var(--primary);color:var(--primary)}
+.owner-av{width:38px;height:38px;border-radius:50%;background:var(--primary);color:#fff;display:grid;place-items:center;font-weight:700;font-size:13px;font-family:'Quicksand',sans-serif;flex-shrink:0}
 .owner-name{font-size:13px;font-weight:700;color:var(--ink);line-height:1.2}
 .owner-sub{font-size:10.5px;color:var(--ink-soft);letter-spacing:.02em}
-.gear{border:1px solid var(--line);background:var(--card);border-radius:10px;width:38px;height:38px;display:grid;place-items:center;cursor:pointer;color:var(--ink-soft)}
-.gear:hover{border-color:var(--primary);color:var(--primary)}
 
-.main{max-width:1120px;margin:0 auto;padding:28px 24px 80px;position:relative}
-.blob{display:none}
+.main{max-width:1120px;width:100%;margin:0 auto;padding:28px 24px 80px;position:relative}
 .canvas{position:relative;z-index:1}
 .h2{font-family:'Quicksand',sans-serif;font-size:26px;font-weight:700;color:var(--terra);margin-bottom:4px;letter-spacing:-.01em}
 .lead{color:var(--ink-soft);font-size:14px;margin-bottom:22px;max-width:60ch}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;transition:box-shadow .18s,border-color .18s}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:0 1px 3px rgba(28,70,73,.05);transition:box-shadow .18s,border-color .18s}
 .item-card:hover,.gcard:hover{box-shadow:0 4px 14px rgba(62,42,30,.07);border-color:#D9C9A8}
 .hero{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:6px}
 .hero-title{font-size:28px;font-weight:700;color:var(--ink)}
@@ -52,12 +58,14 @@ body{font-family:'Nunito Sans',system-ui,sans-serif;color:var(--ink);background:
 .stat svg{width:15px;height:15px;color:var(--primary)}
 .stat b{color:var(--primary-deep);font-size:14px}
 .qa-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:20px 0 30px}
-.qa{border:0;cursor:pointer;font-family:'Quicksand',sans-serif;font-weight:700;font-size:14px;border-radius:18px;padding:22px 16px;display:flex;flex-direction:column;align-items:center;gap:11px;transition:transform .1s,box-shadow .18s;color:#fff}
-.qa svg{width:26px;height:26px}
+.qa{border:0;cursor:pointer;font-family:'Quicksand',sans-serif;font-weight:700;font-size:14px;border-radius:18px;padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:12px;transition:transform .1s,box-shadow .18s;color:#fff}
+.qa-ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.22)}
+.qa-ic svg{width:22px;height:22px}
 .qa:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(36,53,54,.13)}
 .qa.teal{background:var(--primary)}
 .qa.apricot{background:var(--secondary)}
-.qa.plain{background:var(--card);color:var(--primary-deep);border:1px solid var(--line)}
+.qa.plain{background:var(--paper);color:var(--ink);border:1px solid var(--line)}
+.qa.plain .qa-ic{background:var(--card);color:var(--primary-deep);box-shadow:0 1px 3px rgba(28,70,73,.08)}
 .qa.plain:hover{box-shadow:0 8px 18px rgba(36,53,54,.08)}
 @media(max-width:760px){.qa-grid{grid-template-columns:repeat(2,1fr)}}
 .set-sec{border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:11px}
@@ -162,13 +170,14 @@ select:hover,.input:hover{border-color:var(--terra)}
 .link{background:none;border:0;color:var(--terra-deep);font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;text-decoration:underline;padding:0}
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--brown-deep);color:var(--cream);padding:12px 18px;border-radius:12px;font-size:13.5px;font-weight:500;z-index:80;box-shadow:0 6px 20px rgba(0,0,0,.2);max-width:90vw}
 .toast.err{background:#8a3b2a}
-@media (max-width:900px){.owner-txt{display:none}}
-@media (max-width:860px){.plan{grid-template-columns:1fr}.panel{position:static}.nav{order:3;width:100%;overflow:auto}.blob{display:none}}
+@media (max-width:900px){.tb-greet{display:none}}
+.side-mark{display:none}
+@media (max-width:860px){.plan{grid-template-columns:1fr}.panel{position:static}.sidebar{width:72px;padding:20px 10px;align-items:center}.sidebar .lbl{display:none}.sidebar .logo-svg{display:none}.side-mark{display:grid;place-items:center;padding:4px 0 24px}.side-link{justify-content:center;padding:11px;width:auto}}
 @media (prefers-reduced-motion:reduce){.rise,.spin{animation:none}}
 @media print{
-  .top,.nav,.gear,.blob{display:none}
+  .sidebar,.topbar{display:none}
   .main{padding:0}
-  body:has(.scrim) .main,body:has(.scrim) .top{display:none}
+  body:has(.scrim) .main,body:has(.scrim) .topbar{display:none}
   .scrim{position:static;background:none;padding:0;display:block}
   .modal{max-width:none;max-height:none;overflow:visible;border:0;border-radius:0}
   .modal-foot,.modal-head .btn{display:none}
@@ -614,6 +623,9 @@ const LOGO_SVG=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4678.64 136
 </svg>`;
 const MARKC=ICON_SVG;
 const I={
+  help:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>',
+  search:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',
+  bell:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>',
   clock:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>',
   agenda:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>',
   trend:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 6-6"/><path d="M17 8h3v3"/></svg>',
@@ -687,31 +699,46 @@ function renderAuth(){
   $('#a-toggle').onclick=()=>{state.authEmail=$('#a-mail').value;state.authMode=login?'signup':'login';render()};
 }
 
+const NAV_ITEMS=[
+  {v:'planejar',icon:'cal',label:'Planejar'},
+  {v:'agenda',icon:'agenda',label:'Agenda'},
+  {v:'evolucao',icon:'trend',label:'Evolução'},
+  {v:'sessoes',icon:'clock',label:'Histórico'},
+  {v:'pacientes',icon:'user',label:'Pacientes'},
+  {v:'jogos',icon:'brain',label:'Jogos'}
+];
 function renderApp(){
   const nomeDona=state.user?.user_metadata?.nome||state.user?.email?.split('@')[0]||'';
+  const primeiro=nomeDona.split(' ')[0]||nomeDona;
   app().innerHTML=`
-    <header class="top"><div class="top-in">
-      <div class="logo"><div class="logo-svg">${LOGO_SVG}</div></div>
-      <nav class="nav">
-        <button data-v="planejar" class="${state.view==='planejar'?'on':''}">${I.cal} Planejar</button>
-        <button data-v="agenda" class="${state.view==='agenda'?'on':''}">${I.agenda} Agenda</button>
-        <button data-v="evolucao" class="${state.view==='evolucao'?'on':''}">${I.trend} Evolução</button>
-        <button data-v="sessoes" class="${state.view==='sessoes'?'on':''}">${I.clock} Histórico</button>
-        <button data-v="pacientes" class="${state.view==='pacientes'?'on':''}">${I.user} Pacientes</button>
-        <button data-v="jogos" class="${state.view==='jogos'?'on':''}">${I.brain} Jogos</button>
-      </nav>
-      <div class="owner"><div class="owner-av">${esc(iniciaisDe(nomeDona))}</div>
-        <div class="owner-txt"><div class="owner-name">${esc(nomeDona)}</div><div class="owner-sub">${esc(BRAND.clinica)}</div></div>
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="logo-svg">${LOGO_SVG}</div>
+        <div class="side-mark">${MARKC}</div>
+        <nav class="side-nav">
+          ${NAV_ITEMS.map(n=>`<button data-v="${n.v}" class="side-link ${state.view===n.v?'on':''}" title="${n.label}">${I[n.icon]}<span class="lbl">${n.label}</span></button>`).join('')}
+        </nav>
+        <div class="side-foot">
+          <button class="side-link" id="btn-suporte" title="Suporte">${I.help}<span class="lbl">Suporte</span></button>
+          <button class="side-link danger" id="btn-sair" title="Sair">${I.out}<span class="lbl">Sair</span></button>
+        </div>
+      </aside>
+      <div class="content">
+        <header class="topbar">
+          <div class="tb-greet">Bem-vinda, <b>${esc(primeiro||'')}</b></div>
+          <button class="icon-btn" title="Notificações">${I.bell}</button>
+          <button class="icon-btn" id="btn-config" title="Configurações">${I.gear}</button>
+          <div class="owner-av" title="${esc(nomeDona)}">${esc(iniciaisDe(nomeDona))}</div>
+        </header>
+        <main class="main"><div class="canvas">${
+          state.view==='planejar'?viewPlanejar():
+          state.view==='agenda'?viewAgenda():
+          state.view==='evolucao'?viewEvolucao():
+          state.view==='sessoes'?viewSessoes():
+          state.view==='pacientes'?viewPacientes():viewJogos()
+        }</div></main>
       </div>
-      <button class="gear" id="btn-config" title="Configurações">${I.gear}</button>
-    </div></header>
-    <main class="main"><div class="blob"></div><div class="canvas">${
-      state.view==='planejar'?viewPlanejar():
-      state.view==='agenda'?viewAgenda():
-      state.view==='evolucao'?viewEvolucao():
-      state.view==='sessoes'?viewSessoes():
-      state.view==='pacientes'?viewPacientes():viewJogos()
-    }</div></main>`;
+    </div>`;
   wire();
 }
 
@@ -723,7 +750,6 @@ function viewPlanejar(){
   const hero=`
   <div class="hero">
     <div>
-      <div class="hero-logo">${LOGO_SVG}</div>
       <div class="hero-title display">Olá, ${esc(primeiro||'tudo bem?')}</div>
       <div class="hero-sub">Pronta para transformar o dia de mais um pequeno paciente?</div>
     </div>
@@ -734,10 +760,10 @@ function viewPlanejar(){
     </div>
   </div>
   <div class="qa-grid">
-    <button class="qa teal" data-qa="novo-pac">${I.user} Novo paciente</button>
-    <button class="qa apricot" data-qa="novo-jogo">${I.plus} Cadastrar jogo</button>
-    <button class="qa plain" data-qa="hist">${I.clock} Histórico</button>
-    <button class="qa plain" data-qa="banco">${I.brain} Banco de jogos</button>
+    <button class="qa teal" data-qa="novo-pac"><span class="qa-ic">${I.user}</span>Novo paciente</button>
+    <button class="qa apricot" data-qa="novo-jogo"><span class="qa-ic">${I.plus}</span>Cadastrar jogo</button>
+    <button class="qa plain" data-qa="hist"><span class="qa-ic">${I.clock}</span>Histórico</button>
+    <button class="qa plain" data-qa="banco"><span class="qa-ic">${I.brain}</span>Banco de jogos</button>
   </div>`;
   if(!state.pacientes.length){
     return hero+`<h2 class="h2 display">Planejar sessão</h2><div class="card empty" style="margin-top:8px">Cadastre um paciente primeiro — clique em <b>Novo paciente</b> acima.</div>`;
@@ -1157,7 +1183,9 @@ function gridJogos(){
 
 /* ============================ EVENTOS ============================ */
 function wire(){
-  document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{state.view=b.dataset.v;render()});
+  document.querySelectorAll('.side-link[data-v]').forEach(b=>b.onclick=()=>{state.view=b.dataset.v;render()});
+  const btnSuporte=$('#btn-suporte'); if(btnSuporte)btnSuporte.onclick=()=>toast('Suporte chega em breve por aqui 💬');
+  const btnSair=$('#btn-sair'); if(btnSair)btnSair.onclick=()=>{if(confirm('Sair da conta?'))sair()};
   const cfg=$('#btn-config'); if(cfg)cfg.onclick=openConfig;
   document.querySelectorAll('[data-qa]').forEach(b=>b.onclick=()=>{const a=b.dataset.qa;if(a==='novo-pac')modalPaciente(null);else if(a==='novo-jogo')modalJogo(null);else if(a==='hist'){state.view='sessoes';render()}else if(a==='banco'){state.view='jogos';render()}});
 
