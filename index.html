@@ -182,6 +182,7 @@ select:hover,.input:hover{border-color:var(--terra)}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- Leitor de planilhas (xlsx / csv) -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <!-- Google Identity Services (OAuth da Agenda) -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
@@ -633,7 +634,8 @@ const I={
   check:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
   out:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>',
   gear:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>',
-  spin:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>'
+  spin:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>',
+  pdf:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15v-3.5a1.5 1.5 0 0 1 3 0V15M9 13.2h2.6M15.5 15v-3.5h1.7M15.5 13.2H17"/></svg>'
 };
 
 /* ============================ RENDER (raiz) ============================ */
@@ -836,6 +838,7 @@ function viewSessoesBody(){
       <option value="todos" ${filtro==='todos'?'selected':''}>Todos os pacientes</option>
       ${state.pacientes.map(p=>`<option value="${p.id}" ${filtro===p.id?'selected':''}>${esc(p.iniciais)}</option>`).join('')}
     </select>
+    <button class="btn" id="btn-pdf-dia" ${nSel?'':'disabled'}>${I.pdf} Exportar PDF${nSel?` (${nSel})`:''}</button>
     <button class="btn primary" id="btn-print-dia" ${nSel?'':'disabled'}>${I.print} Imprimir selecionadas${nSel?` (${nSel})`:''}</button>
   </div>
   ${dias.length?dias.map(dia=>{
@@ -1216,6 +1219,7 @@ function wireSessoesView(){
     refresh();
   });
   const bpd=$('#btn-print-dia'); if(bpd)bpd.onclick=()=>modalImprimirSelecionadas();
+  const bpdf=$('#btn-pdf-dia'); if(bpdf)bpdf.onclick=()=>exportarSessoesPDF();
 }
 function wirePacGrid(){
   document.querySelectorAll('[data-edit-pac]').forEach(b=>b.onclick=()=>modalPaciente(state.pacientes.find(p=>p.id===b.dataset.editPac)));
@@ -1375,6 +1379,152 @@ function modalImprimirSelecionadas(){
     <div class="modal-foot"><button class="btn" id="mcancel">Fechar</button><button class="btn primary" id="mi-print">${I.print} Imprimir</button></div>`);
   $('#mx').onclick=closeModal; $('#mcancel').onclick=closeModal;
   $('#mi-print').onclick=()=>window.print();
+}
+/* ============================ EXPORTAR PDF (histórico) ============================ */
+function exportarSessoesPDF(){
+  const ids=[...state.selDia];
+  if(!ids.length)return;
+  if(!window.jspdf||!window.jspdf.jsPDF){alert('Não foi possível carregar o gerador de PDF. Verifique sua conexão e tente novamente.');return}
+  const sess=state.sessoes.filter(s=>ids.includes(s.id)).sort((a,b)=>{
+    if(a.data!==b.data)return (a.data||'').localeCompare(b.data||'');
+    const na=state.pacientes.find(p=>p.id===a.pid)?.iniciais||'';
+    const nb=state.pacientes.find(p=>p.id===b.pid)?.iniciais||'';
+    return na.localeCompare(nb);
+  });
+  const porDia=new Map(); sess.forEach(s=>{const k=s.data||'—'; if(!porDia.has(k))porDia.set(k,[]); porDia.get(k).push(s)});
+
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'pt',format:'a4'});
+  const W=595.28,H=841.89,M=44,CW=W-M*2;
+  const COL_PRI=[60,133,140],COL_PRI_L=[77,161,169],COL_TINT=[225,239,240],COL_INK=[36,53,54],
+        COL_SOFT=[110,128,128],COL_LINE=[225,232,232],COL_GOLD=[244,162,97],COL_CREAM=[243,247,247];
+  let y=0,page=1;
+
+  function drawHeader(first){
+    const bandH=first?92:50;
+    doc.setFillColor(...COL_PRI);
+    doc.rect(0,0,W,bandH,'F');
+    doc.setFillColor(...COL_GOLD);
+    doc.rect(0,bandH-4,W,4,'F');
+    if(first){
+      doc.setTextColor(255,255,255);
+      doc.setFont('helvetica','bold'); doc.setFontSize(21);
+      doc.text('Lúdica',M,40);
+      doc.setFont('helvetica','normal'); doc.setFontSize(10.5);
+      doc.text('Histórico de sessões · planejamento com jogos',M,58);
+      const hoje=new Date();
+      const dataStr=String(hoje.getDate()).padStart(2,'0')+'/'+String(hoje.getMonth()+1).padStart(2,'0')+'/'+hoje.getFullYear();
+      doc.setFontSize(9.5);
+      doc.text(`Gerado em ${dataStr}`,W-M,40,{align:'right'});
+      doc.text(`${sess.length} sessão${sess.length>1?'ões':''} selecionada${sess.length>1?'s':''}`,W-M,54,{align:'right'});
+      y=bandH+34;
+    } else {
+      doc.setTextColor(255,255,255);
+      doc.setFont('helvetica','bold'); doc.setFontSize(12);
+      doc.text('Lúdica · Histórico de sessões',M,31);
+      y=bandH+26;
+    }
+  }
+  function ensureSpace(h){
+    if(y+h>H-56){
+      doc.addPage(); page++;
+      drawHeader(false);
+    }
+  }
+  function chipStatus(status,x,cy){
+    const label=status==='realizada'?'Realizada':'Planejada';
+    const color=status==='realizada'?COL_PRI:COL_GOLD;
+    doc.setFont('helvetica','bold'); doc.setFontSize(8.3);
+    const w=doc.getTextWidth(label)+16;
+    doc.setFillColor(...color);
+    doc.roundedRect(x-w,cy-11,w,16,8,8,'F');
+    doc.setTextColor(255,255,255);
+    doc.text(label,x-w/2,cy,{align:'center'});
+    return w;
+  }
+
+  drawHeader(true);
+
+  [...porDia.keys()].forEach(dia=>{
+    ensureSpace(36);
+    doc.setFont('helvetica','bold'); doc.setFontSize(13);
+    doc.setTextColor(...COL_PRI);
+    doc.text(fmtDiaLongo(dia),M,y);
+    y+=8;
+    doc.setDrawColor(...COL_LINE); doc.setLineWidth(1);
+    doc.line(M,y,W-M,y);
+    y+=20;
+
+    porDia.get(dia).forEach(s=>{
+      const p=state.pacientes.find(x=>x.id===s.pid);
+      const nomeP=p?p.iniciais:'—';
+      const idadeP=p?`${p.idade} anos`:'';
+      const jogosStr=s.jogos.map(j=>j.nome).join(', ')||'—';
+
+      doc.setFont('helvetica','normal'); doc.setFontSize(9.8);
+      const objLines=s.objetivo?doc.splitTextToSize(s.objetivo,CW-28):[];
+      const jogosLines=doc.splitTextToSize(jogosStr,CW-28);
+      const notaLines=s.nota?doc.splitTextToSize(s.nota,CW-28):[];
+
+      let inner=46;
+      if(objLines.length)inner+=12+objLines.length*12.5+8;
+      inner+=12+jogosLines.length*12.5;
+      if(notaLines.length)inner+=10+notaLines.length*11;
+      const cardH=inner+16;
+
+      ensureSpace(cardH+16);
+      const cy0=y;
+      doc.setFillColor(255,255,255);
+      doc.setDrawColor(...COL_LINE); doc.setLineWidth(1);
+      doc.roundedRect(M,cy0,CW,cardH,7,7,'FD');
+
+      doc.setFillColor(...COL_TINT);
+      doc.circle(M+24,cy0+22,13,'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(9);
+      doc.setTextColor(...COL_PRI);
+      doc.text(iniciaisDe(nomeP),M+24,cy0+25,{align:'center'});
+
+      doc.setFont('helvetica','bold'); doc.setFontSize(11.5);
+      doc.setTextColor(...COL_INK);
+      doc.text(nomeP,M+46,cy0+19);
+      if(idadeP){doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...COL_SOFT); doc.text(idadeP,M+46,cy0+31)}
+
+      chipStatus(s.status,M+CW-14,cy0+20);
+
+      let ty=cy0+46;
+      if(objLines.length){
+        doc.setFont('helvetica','bold'); doc.setFontSize(8.6); doc.setTextColor(...COL_PRI_L);
+        doc.text('OBJETIVO',M+14,ty); ty+=12;
+        doc.setFont('helvetica','normal'); doc.setFontSize(9.8); doc.setTextColor(...COL_INK);
+        doc.text(objLines,M+14,ty); ty+=objLines.length*12.5+8;
+      }
+      doc.setFont('helvetica','bold'); doc.setFontSize(8.6); doc.setTextColor(...COL_PRI_L);
+      doc.text('JOGOS',M+14,ty); ty+=12;
+      doc.setFont('helvetica','normal'); doc.setFontSize(9.8); doc.setTextColor(...COL_INK);
+      doc.text(jogosLines,M+14,ty); ty+=jogosLines.length*12.5;
+      if(notaLines.length){
+        ty+=10;
+        doc.setFont('helvetica','italic'); doc.setFontSize(9); doc.setTextColor(...COL_SOFT);
+        doc.text(notaLines,M+14,ty);
+      }
+      y=cy0+cardH+16;
+    });
+    y+=6;
+  });
+
+  const totalPages=doc.internal.getNumberOfPages();
+  for(let i=1;i<=totalPages;i++){
+    doc.setPage(i);
+    doc.setDrawColor(...COL_LINE); doc.setLineWidth(0.7);
+    doc.line(M,H-40,W-M,H-40);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8.3);
+    doc.setTextColor(...COL_SOFT);
+    doc.text('Lúdica — planejamento de sessões terapêuticas com jogos',M,H-26);
+    doc.text(`${i} / ${totalPages}`,W-M,H-26,{align:'right'});
+  }
+
+  const hj=hoje();
+  doc.save(`ludica-historico-${hj}.pdf`);
 }
 function modalSessao(id){
   const s=state.sessoes.find(x=>x.id===id); if(!s)return;
