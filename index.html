@@ -494,6 +494,34 @@ function fmtData(iso){if(!iso)return'';const p=String(iso).split('-');return p.l
 function toast(msg,err){document.querySelectorAll('.toast').forEach(t=>t.remove());const t=document.createElement('div');t.className='toast'+(err?' err':'');t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),3200)}
 const iniciaisDe = nome => {const p=String(nome||'').trim().split(/\s+/).filter(Boolean);if(!p.length)return '—';return (p[0][0]+(p.length>1?p[p.length-1][0]:'')).toUpperCase();};
 
+/* ============================ PERFIL (nome/avatar/gênero do usuário) ============================
+   Quando o login é feito pelo Google, o Supabase guarda o nome e a foto em campos
+   diferentes de quando é cadastro por e-mail/senha — por isso a busca com vários fallbacks. */
+function perfilNome(){
+  const m=state.user?.user_metadata||{};
+  return (m.nome||m.full_name||m.name||state.user?.email?.split('@')[0]||'').trim();
+}
+function perfilAvatar(){
+  const m=state.user?.user_metadata||{};
+  return m.avatar_url||m.picture||'';
+}
+function avatarHTML(cls){
+  const url=perfilAvatar(), nome=perfilNome();
+  if(url) return `<img src="${esc(url)}" alt="${esc(nome)}" class="${cls}" style="object-fit:cover" referrerpolicy="no-referrer">`;
+  return `<div class="${cls}" title="${esc(nome)}">${esc(iniciaisDe(nome))}</div>`;
+}
+// Na primeira vez que a gente vê nome/foto vindos do Google, salva no perfil (user_metadata)
+// pra ficar disponível também na tela de Configurações e não perder se o Google mudar algo depois.
+async function sincronizarPerfilGoogle(){
+  const m=state.user?.user_metadata||{};
+  const patch={};
+  if(!m.nome && (m.full_name||m.name)) patch.nome=m.full_name||m.name;
+  if(Object.keys(patch).length){
+    const {data,error}=await sb.auth.updateUser({data:patch});
+    if(!error) state.user=data.user;
+  }
+}
+
 // modelo de IA escolhido (fica salvo no navegador, por dispositivo) — a CHAVE da IA fica só no servidor (Edge Function), nunca aqui
 const MKEY="ludica_model";
 /* se o navegador tiver um modelo antigo salvo (ex: gemini-2.5-flash, já desativado), atualiza pro atual */
@@ -572,7 +600,7 @@ async function boot(){
   const {data:{session}}=await sb.auth.getSession();
   state.user=session?.user||null;
   if(session?.provider_token){ state.gcal.connected=true; state.gcal.token=session.provider_token; }
-  if(state.user){ await carregarTudo(); } else { render(); }
+  if(state.user){ await sincronizarPerfilGoogle(); await carregarTudo(); } else { render(); }
 }
 async function carregarTudo(){
   state.loading=true; render();
@@ -834,7 +862,7 @@ const NAV_ITEMS=[
   {v:'jogos',icon:'brain',label:'Jogos'}
 ];
 function renderApp(){
-  const nomeDona=state.user?.user_metadata?.nome||state.user?.email?.split('@')[0]||'';
+  const nomeDona=perfilNome();
   const primeiro=nomeDona.split(' ')[0]||nomeDona;
   app().innerHTML=`
     <div class="shell">
@@ -851,10 +879,10 @@ function renderApp(){
       </aside>
       <div class="content">
         <header class="topbar">
-          <div class="tb-greet">Bem-vinda, <b>${esc(primeiro||'')}</b></div>
+          <div class="tb-greet">Bem-vindo(a), <b>${esc(primeiro||'')}</b></div>
           <button class="icon-btn" title="Notificações">${I.bell}</button>
           <button class="icon-btn" id="btn-config" title="Configurações">${I.gear}</button>
-          <div class="owner-av" title="${esc(nomeDona)}">${esc(iniciaisDe(nomeDona))}</div>
+          ${avatarHTML('owner-av')}
         </header>
         <main class="main"><div class="canvas">${
           state.view==='planejar'?viewPlanejar():
@@ -872,12 +900,12 @@ function renderApp(){
 function viewPlanejar(){
   const p=state.pacientes.find(x=>x.id===state.pid);
   const sug=sugestoes(p), alvo=targetAreas(p), uso=usoPorJogo(state.pid);
-  const primeiro=(state.user?.user_metadata?.nome||'').split(' ')[0];
+  const primeiro=perfilNome().split(' ')[0];
   const hero=`
   <div class="hero">
     <div>
       <div class="hero-title display">Olá, ${esc(primeiro||'tudo bem?')}</div>
-      <div class="hero-sub">Pronta para transformar o dia de mais um pequeno paciente?</div>
+      <div class="hero-sub">Pronto(a) para transformar o dia de mais um pequeno paciente?</div>
     </div>
     <div class="hero-stats">
       <span class="stat">${I.user}<b>${state.pacientes.length}</b> pacientes</span>
@@ -1114,7 +1142,7 @@ function abrirRelatorio(){
   const p=state.pacientes.find(x=>x.id===state.evoPid); if(!p)return;
   const sess=[...sessoesDoPaciente(p.id)].reverse(); // cronológica no relatório
   const realizadas=sess.filter(s=>s.status==='realizada');
-  const nomeProf=state.user?.user_metadata?.nome||'';
+  const nomeProf=perfilNome();
   const emissao=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
   openModal(`
     <div class="modal-head"><b class="display" style="font-size:19px;color:var(--terra)">Relatório de evolução</b><button class="btn ghost" id="mx" style="margin-left:auto;padding:6px">${I.x}</button></div>
@@ -1777,16 +1805,17 @@ function modalSessao(id){
 }
 function openConfig(){
   const model=modeloAtual();
-  const nome=state.user?.user_metadata?.nome||"";
+  const nome=perfilNome();
   openModal(`
     <div class="modal-head"><b class="display" style="font-size:19px;color:var(--terra)">Configurações</b><button class="btn ghost" id="mx" style="margin-left:auto;padding:6px">${I.x}</button></div>
     <div class="modal-body">
 
       <div class="set-sec">
         <h5>${I.user} Perfil</h5>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">${avatarHTML('owner-av')}<span class="muted" style="font-size:12.5px">${perfilAvatar()?'Foto vinda da sua conta Google.':'Sem foto de perfil — entre com o Google pra usar sua foto automaticamente.'}</span></div>
         <div><label class="flabel">Nome de exibição</label><input class="input" id="c-nome" value="${esc(nome)}" placeholder="ex: Larissa Lamicoski"></div>
         <div><label class="flabel">E-mail da conta</label><input class="input" value="${esc(state.user?.email||'')}" disabled style="opacity:.65"></div>
-        <button class="btn sm" id="c-save-nome" style="align-self:flex-start">${I.check} Salvar nome</button>
+        <button class="btn sm" id="c-save-nome" style="align-self:flex-start">${I.check} Salvar perfil</button>
       </div>
 
       <div class="set-sec">
@@ -1829,7 +1858,7 @@ function openConfig(){
     const n=$('#c-nome').value.trim(); if(!n)return toast("Digite um nome.",true);
     const {data,error}=await sb.auth.updateUser({data:{nome:n}});
     if(error)return toast(error.message,true);
-    state.user=data.user; toast("Nome atualizado."); render(); openConfig();
+    state.user=data.user; toast("Perfil atualizado."); render(); openConfig();
   };
   $('#c-save-pass').onclick=async()=>{
     const p0=$('#c-pass0').value, p1=$('#c-pass1').value,p2=$('#c-pass2').value;
