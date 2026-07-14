@@ -438,7 +438,7 @@ function ultimaSessao(pid){return sessoesDoPaciente(pid)[0]||null}
 function usoPorJogo(pid){
   // retorna Map: id_do_jogo -> {count, ultima: 'YYYY-MM-DD', reacoes:[...]}
   const map=new Map();
-  sessoesDoPaciente(pid).forEach(s=>s.jogos.forEach(j=>{
+  sessoesDoPaciente(pid).forEach(s=>s.jogos.filter(j=>j.trabalhado!==false).forEach(j=>{
     const cur=map.get(j.id)||{count:0,ultima:null,reacoes:[]};
     cur.count++; if(!cur.ultima||s.data>cur.ultima)cur.ultima=s.data;
     if(j.reacao&&j.reacao.trim())cur.reacoes.push(j.reacao.trim());
@@ -864,7 +864,7 @@ function viewSessoesBody(){
                 ${s.reflexao&&Object.values(s.reflexao).some(v=>v)?`<span class="chip dim" title="Raciocínio clínico registrado" style="margin-left:auto">${I.brain}</span><span class="chip ${s.status==='realizada'?'hit':'demanda'}" style="margin-left:8px">${s.status==='realizada'?'Realizada':'Planejada'}</span>`:`<span class="chip ${s.status==='realizada'?'hit':'demanda'}" style="margin-left:auto">${s.status==='realizada'?'Realizada':'Planejada'}</span>`}
               </div>
               ${s.objetivo?`<div class="why">${esc(s.objetivo)}</div>`:''}
-              <div class="tags">${s.jogos.map(j=>`<span class="chip dim">${esc(j.nome)}</span>`).join('')}</div>
+              <div class="tags">${s.jogos.map(j=>`<span class="chip dim" style="${j.trabalhado===false?'text-decoration:line-through;opacity:.6;':''}${j.extra?'border:1px dashed var(--secondary-deep);':''}">${esc(j.nome)}${j.extra?' <span style="opacity:.75">· extra</span>':''}</span>`).join('')}</div>
             </div>
           </div>`;
         }).join('')}
@@ -888,7 +888,7 @@ function fmtDiaLongo(iso){
 /* ============================ EVOLUÇÃO DO PACIENTE ============================ */
 function areasDaSessao(s){
   const set=new Set();
-  (s.jogos||[]).forEach(j=>{const g=state.jogos.find(x=>x.id===j.id);if(g)(g.areas||[]).forEach(a=>set.add(a))});
+  (s.jogos||[]).filter(j=>j.trabalhado!==false).forEach(j=>{const g=state.jogos.find(x=>x.id===j.id);if(g)(g.areas||[]).forEach(a=>set.add(a))});
   return [...set];
 }
 function viewEvolucao(){
@@ -1364,7 +1364,7 @@ function modalImprimirSelecionadas(){
         <div><b style="font-size:14px">${esc(p?p.iniciais:'—')}</b>${p?`<span class="muted"> · ${p.idade} anos</span>`:''}</div>
       </div>
       ${s.objetivo?`<div style="font-size:13.5px;margin-bottom:6px"><b>Objetivo:</b> ${esc(s.objetivo)}</div>`:''}
-      <div style="font-size:13.5px"><b>Jogos:</b> ${s.jogos.map(j=>esc(j.nome)).join(', ')||'—'}</div>
+      <div style="font-size:13.5px"><b>Jogos:</b> ${s.jogos.map(j=>esc(j.nome)+(j.extra?' (extra)':'')+(j.trabalhado===false?' (não trabalhado)':'')).join(', ')||'—'}</div>
       ${s.nota?`<div style="font-size:13px;margin-top:6px" class="muted">${esc(s.nota)}</div>`:''}
     </div>`;
   };
@@ -1459,7 +1459,7 @@ function exportarSessoesPDF(){
       const p=state.pacientes.find(x=>x.id===s.pid);
       const nomeP=p?p.iniciais:'—';
       const idadeP=p?`${p.idade} anos`:'';
-      const jogosStr=s.jogos.map(j=>j.nome).join(', ')||'—';
+      const jogosStr=s.jogos.map(j=>j.nome+(j.extra?' (extra)':'')+(j.trabalhado===false?' (não trabalhado)':'')).join(', ')||'—';
 
       doc.setFont('helvetica','normal'); doc.setFontSize(9.8);
       const objLines=s.objetivo?doc.splitTextToSize(s.objetivo,CW-28):[];
@@ -1530,6 +1530,63 @@ function modalSessao(id){
   const s=state.sessoes.find(x=>x.id===id); if(!s)return;
   const p=state.pacientes.find(x=>x.id===s.pid);
   const rc=s.reflexao||{};
+  let jogosLocal=(s.jogos||[]).map(j=>({id:j.id,nome:j.nome,reacao:j.reacao||'',trabalhado:j.trabalhado!==false,extra:!!j.extra}));
+
+  function syncFromDom(){
+    document.querySelectorAll('[data-r-idx]').forEach(t=>{const i=+t.dataset.rIdx; if(jogosLocal[i])jogosLocal[i].reacao=t.value});
+  }
+  function jogosListHTML(){
+    if(!jogosLocal.length)return `<div class="muted" style="font-size:13px">Nenhum jogo nesta sessão. Adicione abaixo o que foi de fato jogado.</div>`;
+    return jogosLocal.map((j,i)=>`
+      <div class="plano-jogo" style="${j.trabalhado?'':'opacity:.6'}">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <b style="${j.trabalhado?'':'text-decoration:line-through'}">${esc(j.nome)}</b>
+          ${j.extra?`<span class="chip dim" style="font-size:10px;padding:2px 8px">${I.plus} extra</span>`:''}
+          <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-soft);cursor:pointer;white-space:nowrap">
+              <input type="checkbox" data-tog-idx="${i}" ${j.trabalhado?'':'checked'} style="width:15px;height:15px;accent-color:var(--secondary)">
+              Não trabalhado
+            </label>
+            <button type="button" class="btn ghost" data-rm-idx="${i}" style="padding:5px 7px;color:var(--terra-deep)" title="Remover jogo">${I.trash}</button>
+          </div>
+        </div>
+        <textarea class="input" data-r-idx="${i}" rows="2" style="margin-top:8px;resize:vertical" placeholder="${j.trabalhado?'Como reagiu / observações':'Motivo de não ter sido trabalhado (opcional)'}">${esc(j.reacao||'')}</textarea>
+      </div>`).join('');
+  }
+  function addSelectHTML(){
+    const disponiveis=state.jogos.filter(g=>!jogosLocal.some(j=>j.id===g.id)).sort((a,b)=>a.nome.localeCompare(b.nome));
+    return `<select class="input" id="s-add-jogo" style="flex:1" ${disponiveis.length?'':'disabled'}>
+      <option value="">${disponiveis.length?'+ Adicionar jogo que entrou na sessão…':'Todos os jogos do catálogo já estão nesta sessão'}</option>
+      ${disponiveis.map(g=>`<option value="${g.id}">${esc(g.nome)}</option>`).join('')}
+    </select>`;
+  }
+  function jogosSectionHTML(){
+    return `
+      <label class="flabel" style="margin:0">Jogos e reações</label>
+      <div style="display:flex;flex-direction:column;gap:12px">${jogosListHTML()}</div>
+      <div style="display:flex;gap:8px;align-items:center">${addSelectHTML()}</div>
+      <p class="muted" style="font-size:11.5px;line-height:1.5">Surgiu um jogo fora do plano? Adicione acima. Não deu pra aplicar um jogo planejado? Marque "não trabalhado" sem perder o registro. Pra substituir um pelo outro, remova o antigo e adicione o novo.</p>`;
+  }
+  function refreshJogosSection(){
+    const wrap=$('#s-jogos-wrap'); if(!wrap)return;
+    wrap.innerHTML=jogosSectionHTML();
+    wireJogosSection();
+  }
+  function wireJogosSection(){
+    document.querySelectorAll('[data-tog-idx]').forEach(cb=>cb.onchange=()=>{
+      syncFromDom(); const i=+cb.dataset.togIdx; jogosLocal[i].trabalhado=!cb.checked; refreshJogosSection();
+    });
+    document.querySelectorAll('[data-rm-idx]').forEach(b=>b.onclick=()=>{
+      syncFromDom(); const i=+b.dataset.rmIdx; jogosLocal.splice(i,1); refreshJogosSection();
+    });
+    const sel=$('#s-add-jogo'); if(sel)sel.onchange=()=>{
+      if(!sel.value)return; syncFromDom();
+      const g=state.jogos.find(x=>x.id===sel.value);
+      if(g)jogosLocal.push({id:g.id,nome:g.nome,reacao:'',trabalhado:true,extra:true});
+      refreshJogosSection();
+    };
+  }
+
   openModal(`
     <div class="modal-head"><b class="display" style="font-size:19px;color:var(--terra)">Sessão · ${fmtData(s.data)}</b><button class="btn ghost" id="mx" style="margin-left:auto;padding:6px">${I.x}</button></div>
     <div class="modal-body">
@@ -1539,11 +1596,7 @@ function modalSessao(id){
         <div class="grow"><label class="flabel">Data da sessão</label><input class="input" id="s-data" type="date" value="${esc(s.data)}"></div>
         <div class="grow" style="flex:2"><label class="flabel">Objetivo</label><input class="input" id="s-obj" value="${esc(s.objetivo)}" placeholder="objetivo da sessão"></div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:12px">
-        <label class="flabel" style="margin:0">Jogos e reações</label>
-        ${s.jogos.map(j=>`<div class="plano-jogo"><b>${esc(j.nome)}</b>
-          <textarea class="input" data-r="${j.id}" rows="2" style="margin-top:8px;resize:vertical" placeholder="Como reagiu / observações">${esc(j.reacao||'')}</textarea></div>`).join('')}
-      </div>
+      <div id="s-jogos-wrap" style="display:flex;flex-direction:column;gap:12px">${jogosSectionHTML()}</div>
       <details class="plano-jogo" style="padding:14px" ${(rc.observacao||rc.hipotese||rc.ajuste||rc.proximo)?'open':''}>
         <summary style="cursor:pointer;font-weight:700;color:var(--terra);display:flex;align-items:center;gap:7px;list-style:none">${I.brain} Raciocínio clínico <span class="muted" style="font-weight:400">(opcional — ajuda a estruturar hipóteses)</span></summary>
         <div style="display:flex;flex-direction:column;gap:12px;margin-top:14px">
@@ -1565,12 +1618,13 @@ function modalSessao(id){
       <button class="btn ghost" id="s-del" style="color:var(--terra-deep)">${I.trash} Excluir</button>
       <div style="display:flex;gap:10px"><button class="btn" id="s-print">${I.print} Imprimir</button><button class="btn primary" id="s-save">${I.save} Salvar</button></div>
     </div>`);
+  wireJogosSection();
   $('#mx').onclick=closeModal;
   $('#s-print').onclick=()=>window.print();
   $('#s-del').onclick=()=>{if(confirm('Excluir esta sessão do histórico?'))excluirSessao(id)};
   $('#s-save').onclick=async()=>{
-    const jogos=s.jogos.map(j=>({...j}));
-    document.querySelectorAll('[data-r]').forEach(t=>{const j=jogos.find(x=>x.id===t.dataset.r);if(j)j.reacao=t.value.trim()});
+    syncFromDom();
+    const jogos=jogosLocal.map(j=>({id:j.id,nome:j.nome,reacao:(j.reacao||'').trim(),trabalhado:j.trabalhado,extra:!!j.extra}));
     const rf={observacao:$('#rc-obs').value.trim(),hipotese:$('#rc-hip').value.trim(),ajuste:$('#rc-aj').value.trim(),proximo:$('#rc-prox').value.trim()};
     const reflexao=Object.values(rf).some(v=>v)?rf:null;
     const patch={data:$('#s-data').value||s.data,objetivo:$('#s-obj').value.trim(),nota:$('#s-nota').value.trim(),status:$('#s-real').checked?'realizada':'planejada',jogos,reflexao};
