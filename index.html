@@ -194,6 +194,83 @@ select:hover,.input:hover{border-color:var(--terra)}
   .modal{max-width:none;max-height:none;overflow:visible;border:0;border-radius:0}
   .modal-foot,.modal-head .btn{display:none}
 }
+
+/* ==========================================================================
+   AJUSTES MOBILE — tudo abaixo é adicional (@media), não sobrescreve nada
+   fora dessas faixas de largura. Desktop (>680px, e >860px pra sidebar)
+   permanece inalterado.
+   ========================================================================== */
+
+/* ---- 1. LAYOUT / RESPONSIVIDADE (360px–428px) ---- */
+@media (max-width:680px){
+  /* respiro geral menor nas laterais, ganha espaço útil de conteúdo */
+  .main{padding:16px 14px 90px}
+  .topbar{padding:10px 14px;gap:8px}
+  .h2{font-size:20px}
+  .hero-title{font-size:21px}
+  .lead{font-size:13.5px;margin-bottom:16px}
+  .hero{gap:12px}
+  .hero-stats{margin-left:0;width:100%}
+  .rep-title{font-size:16px}
+  .rep-head{flex-wrap:wrap}
+  /* grid de relatório: 2 colunas fixas quebravam com fontes grandes do sistema */
+  .rep-meta{grid-template-columns:1fr}
+
+  /* evita que blocos com texto monoespaçado (ex.: chave Supabase) estourem a tela */
+  .plano-jogo,[style*="font-family:monospace"]{word-break:break-word;overflow-wrap:anywhere}
+  /* rede de segurança contra overflow horizontal pontual */
+  body{overflow-x:hidden}
+
+  /* linhas de formulário (.row) — o problema real não é falta de quebra, é que
+     <select>/<input> dentro de flex tem min-width:auto e "empurra" a tela pelo
+     conteúdo (ex.: opções longas do <select> de modelo de IA). Zerar o
+     min-width resolve o estouro; o wrap garante empilhar quando não cabe. */
+  .row{flex-wrap:wrap}
+  .row>*{min-width:0}
+  .row>.grow{flex-basis:100%}
+
+  /* toast ocupando a largura útil da tela, sem depender de max-width:90vw */
+  .toast{left:16px;right:16px;width:auto;transform:none;text-align:center}
+}
+
+/* sidebar: já vira ícone-only em 860px (regra existente). Em telas bem
+   estreitas (<400px) ela ainda consumia ~20% da largura — reduz mais. */
+@media (max-width:400px){
+  .sidebar{width:56px;padding:16px 6px}
+  .qa-grid{grid-template-columns:1fr}
+}
+
+/* ---- 2. NAVEGAÇÃO E INTERAÇÃO (alvo de toque ≥44x44px, sem hover) ---- */
+@media (max-width:680px){
+  .icon-btn{width:44px;height:44px}
+  .owner-av{width:40px;height:40px}
+  .btn{min-height:44px}
+  .btn.sm{min-height:40px;padding:9px 14px}
+  /* botões "ghost" pequenos (fechar modal ✕, editar/excluir item) usam
+     padding inline (ex. style="padding:6px") que tem mais especificidade
+     que qualquer classe — por isso o !important aqui, restrito ao mobile */
+  .btn.ghost{min-width:44px !important;min-height:44px !important;padding:10px !important;display:inline-flex;align-items:center;justify-content:center}
+  .toggle{min-height:44px;padding:10px 14px;display:inline-flex;align-items:center}
+  .side-link{padding:13px}
+  /* setas de reordenar sessão (↑/↓) — área de toque maior sem mudar o ícone */
+  .order button{padding:6px 4px;height:auto;min-width:32px}
+
+  /* modais viram "bottom sheet": mais natural pro polegar, sem hover/posição
+     fixa central que corta em telas pequenas, e reage melhor ao teclado
+     virtual porque usa dvh (viewport dinâmico) em vez de vh fixo */
+  .scrim{padding:0;align-items:flex-end}
+  .modal{max-width:100%;width:100%;max-height:92dvh;border-radius:18px 18px 0 0}
+  .modal-head{padding:14px 16px}
+  .modal-body{padding:16px}
+  .modal-foot{padding:12px 16px calc(12px + env(safe-area-inset-bottom));flex-direction:column;gap:8px}
+  /* com flex-direction:column, os filhos diretos (botão único OU o <div> que
+     agrupa 2 botões) já esticam 100% da largura por padrão (align-items:stretch) */
+  .modal-foot .btn{justify-content:center}
+
+  /* inputs em 16px: abaixo disso o iOS Safari dá zoom automático ao focar,
+     o que "quebra" o layout visualmente até o usuário desfazer o zoom */
+  input,.input,select,textarea.input,textarea,.select-fancy{font-size:16px}
+}
 </style>
 </head>
 <body>
