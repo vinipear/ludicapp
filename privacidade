@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Política de Privacidade — Lúdica</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=Nunito+Sans:wght@400;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --paper:#EEF2F2;--card:#FFFFFF;--ink:#243536;--ink-soft:#6E8080;
+  --primary:#4DA1A9;--primary-deep:#3C858C;--primary-tint:#E1EFF0;
+  --deep:#1C4649;--line:#E1E8E8;
+}
+body{font-family:'Nunito Sans',system-ui,sans-serif;color:var(--ink);background:var(--paper);line-height:1.65;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:48px 24px 100px}
+.display{font-family:'Quicksand',sans-serif;letter-spacing:-.005em}
+h1{font-family:'Quicksand',sans-serif;font-size:28px;color:var(--primary-deep);margin-bottom:6px}
+.updated{color:var(--ink-soft);font-size:13px;margin-bottom:32px}
+h2{font-family:'Quicksand',sans-serif;font-size:18px;color:var(--deep);margin:34px 0 10px}
+p,li{font-size:14.5px;color:var(--ink);margin-bottom:10px}
+ul{padding-left:20px;margin-bottom:14px}
+a{color:var(--primary-deep)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:28px 30px;box-shadow:0 1px 3px rgba(28,70,73,.05)}
+.back{display:inline-block;margin-bottom:20px;font-size:13px;color:var(--ink-soft);text-decoration:none}
+.back:hover{color:var(--primary-deep)}
+.contato{background:var(--primary-tint);border-radius:12px;padding:16px 18px;font-size:14px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← Voltar para o Lúdica</a>
+  <div class="card">
+    <h1 class="display">Política de Privacidade — Lúdica</h1>
+    <p class="updated">Última atualização: 14 de julho de 2026</p>
+
+    <p>Esta política explica como o <b>Lúdica</b> — sistema de planejamento de sessões com jogos, voltado a profissionais que atendem crianças e adolescentes — coleta, usa e protege dados pessoais. Ela vale para quem cria uma conta e usa a ferramenta (a "profissional") e para os dados de pacientes que a profissional cadastra no sistema.</p>
+
+    <h2>1. Quem é o responsável pelos dados</h2>
+    <p>O Lúdica é desenvolvido e mantido por Vinícius, responsável técnico pela aplicação. Cada profissional que usa o sistema é responsável pelos dados de seus próprios pacientes que insere na ferramenta, atuando como controladora desses dados perante a Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018). O responsável técnico atua como operador, processando os dados apenas para fazer o sistema funcionar.</p>
+    <div class="contato">Dúvidas ou solicitações sobre dados: <a href="mailto:contato@seudominio.com">contato@seudominio.com</a></div>
+
+    <h2>2. Dados que coletamos</h2>
+    <p><b>Da profissional (titular da conta):</b></p>
+    <ul>
+      <li>Nome e e-mail — informados no cadastro ou obtidos do Google, caso o login seja feito com "Entrar com o Google".</li>
+      <li>Foto de perfil do Google, quando aplicável.</li>
+      <li>Caso a profissional conecte a Google Agenda, um token de acesso temporário é usado para ler e criar eventos — esse token fica apenas no navegador da profissional, não é armazenado em nossos servidores.</li>
+    </ul>
+    <p><b>Dos pacientes (inseridos pela profissional):</b></p>
+    <ul>
+      <li>Iniciais (não o nome completo), idade, demandas/áreas de desenvolvimento trabalhadas e observações clínicas.</li>
+      <li>Esses dados são considerados <b>dados pessoais sensíveis</b> (dados de saúde, art. 5º, II da LGPD), tratados sob a base legal de tutela da saúde e execução de serviço, conduzidos exclusivamente pela profissional responsável pelo atendimento.</li>
+    </ul>
+
+    <h2>3. Como os dados são usados</h2>
+    <ul>
+      <li>Organizar o planejamento de sessões, histórico de atendimentos e sugestões de jogos.</li>
+      <li>Quando a profissional usa a "Sugestão inteligente", enviamos à IA (Google Gemini) apenas idade, demanda e observações do paciente — <b>o nome ou iniciais do paciente nunca são enviados</b> ao modelo de IA.</li>
+      <li>Quando a Google Agenda está conectada, o sistema lê e cria eventos diretamente na agenda do Google da profissional, usando a autorização que ela concedeu.</li>
+      <li>Não usamos os dados para publicidade, não vendemos dados a terceiros e não fazemos qualquer uso além do necessário para o funcionamento do Lúdica.</li>
+    </ul>
+
+    <h2>4. Onde os dados ficam armazenados</h2>
+    <p>Os dados de conta, pacientes e sessões ficam armazenados no Supabase, com controle de acesso por linha (Row Level Security): cada profissional só consegue ver e alterar os dados que ela mesma cadastrou. A comunicação com o servidor é criptografada (HTTPS).</p>
+
+    <h2>5. Compartilhamento com terceiros</h2>
+    <ul>
+      <li><b>Google</b> — para autenticação (login) e, se a profissional autorizar, para leitura/criação de eventos na Google Agenda.</li>
+      <li><b>Google Gemini (IA)</b> — para gerar sugestões de jogos, recebendo apenas idade, demanda e observações (sem identificação do paciente).</li>
+      <li><b>Supabase</b> — provedor de banco de dados que armazena as informações da conta e dos pacientes.</li>
+    </ul>
+    <p>Nenhum desses terceiros recebe dados para fins próprios de publicidade ou revenda.</p>
+
+    <h2>6. Backup e exportação</h2>
+    <p>A profissional pode exportar uma cópia de seus dados (pacientes, jogos e sessões) em um arquivo .json a qualquer momento, pela tela de Configurações.</p>
+
+    <h2>7. Seus direitos como titular de dados</h2>
+    <p>Conforme a LGPD, você pode solicitar a qualquer momento:</p>
+    <ul>
+      <li>Confirmação da existência de tratamento e acesso aos dados;</li>
+      <li>Correção de dados incompletos, inexatos ou desatualizados;</li>
+      <li>Exclusão dos dados pessoais (conta e/ou dados de pacientes), exceto quando houver obrigação legal de retenção;</li>
+      <li>Portabilidade dos dados a outro fornecedor, mediante requisição expressa;</li>
+      <li>Revogação do consentimento, incluindo desconectar o acesso à Google Agenda a qualquer momento pela tela de Agenda.</li>
+    </ul>
+    <p>Para exercer esses direitos, entre em contato pelo e-mail acima. Pedidos relacionados a dados de pacientes devem ser direcionados à profissional responsável pelo atendimento, já que ela é a controladora desses dados.</p>
+
+    <h2>8. Retenção e exclusão</h2>
+    <p>Os dados ficam armazenados enquanto a conta estiver ativa. Ao solicitar o encerramento da conta, os dados são removidos do banco de dados, salvo quando a legislação aplicável (ex: normas de prontuário/registro profissional) exigir guarda por prazo determinado — nesse caso, a responsabilidade de retenção é da profissional, não da plataforma.</p>
+
+    <h2>9. Cookies e armazenamento local</h2>
+    <p>O Lúdica usa apenas o armazenamento necessário para manter a sessão de login ativa no navegador (via Supabase Auth). Não utilizamos cookies de rastreamento ou publicidade.</p>
+
+    <h2>10. Alterações nesta política</h2>
+    <p>Esta política pode ser atualizada conforme o sistema evolui. A data no topo desta página indica a versão mais recente. Mudanças relevantes serão comunicadas às profissionais cadastradas.</p>
+
+    <h2>11. Contato</h2>
+    <p>Dúvidas, solicitações ou reclamações sobre privacidade e proteção de dados podem ser enviadas para:</p>
+    <div class="contato"><a href="mailto:contato@seudominio.com">contato@seudominio.com</a></div>
+  </div>
+</div>
+</body>
+</html>
