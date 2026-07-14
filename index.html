@@ -180,6 +180,10 @@ select:hover,.input:hover{border-color:var(--terra)}
 .auth-card .flabel{text-align:left}
 .auth-mark{width:54px;height:54px;border-radius:16px;background:var(--brown-deep);display:grid;place-items:center;margin:0 auto 16px}
 .link{background:none;border:0;color:var(--terra-deep);font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;text-decoration:underline;padding:0}
+.btn.google{background:#fff;color:#3c4043;border-color:var(--line);justify-content:center;font-weight:600}
+.btn.google:hover{background:#f7f7f7;border-color:#c9c9c9}
+.auth-divider{display:flex;align-items:center;gap:10px;margin:16px 0;color:var(--ink-soft);font-size:12px}
+.auth-divider::before,.auth-divider::after{content:"";flex:1;height:1px;background:var(--line)}
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--brown-deep);color:var(--cream);padding:12px 18px;border-radius:12px;font-size:13.5px;font-weight:500;z-index:80;box-shadow:0 6px 20px rgba(0,0,0,.2);max-width:90vw}
 .toast.err{background:#8a3b2a}
 @media (max-width:900px){.tb-greet{display:none}}
@@ -281,8 +285,6 @@ select:hover,.input:hover{border-color:var(--terra)}
 <!-- Leitor de planilhas (xlsx / csv) -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-<!-- Google Identity Services (OAuth da Agenda) -->
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
 /* ============================================================
    1) CONFIGURAÇÃO — troque pelos dados do SEU projeto Supabase
@@ -306,17 +308,20 @@ const BRAND = {
 document.title = `${BRAND.nome} — ${BRAND.subtitulo}`;
 
 /* ============================================================
-   3) GOOGLE AGENDA (opcional) — pra ativar a aba Agenda:
-   a) console.cloud.google.com → criar projeto → "APIs e serviços"
-   b) Ativar a "Google Calendar API"
-   c) Tela de consentimento OAuth (tipo Externo, publicar)
-   d) Credenciais → Criar credencial → ID do cliente OAuth →
-      Aplicativo da Web → em "Origens JavaScript autorizadas"
-      adicionar o endereço onde o Lúdica está hospedado
-   e) Colar o Client ID abaixo (termina com .apps.googleusercontent.com)
-   Sem isso, a aba Agenda mostra as instruções de ativação.
+   3) GOOGLE AGENDA — vem de graça junto com o "Entrar com o Google".
+   No login, já pedimos também a permissão de acesso à Agenda
+   (escopo calendar.events). Pra isso funcionar:
+   a) console.cloud.google.com → criar/usar um projeto → ativar
+      a "Google Calendar API" em "APIs e serviços"
+   b) Tela de consentimento OAuth: adicionar o escopo
+      ".../auth/calendar.events" nos escopos do app
+   c) No Supabase → Authentication → Providers → Google: ativar
+      e colar o Client ID / Client Secret desse mesmo projeto
+   d) No Google Cloud, autorizar como Redirect URI a URL de
+      callback que o Supabase mostra nessa tela de configuração
+   Sem isso, o login com senha continua funcionando normal — só
+   a aba Agenda fica pedindo pra conectar.
    ============================================================ */
-const GOOGLE_CLIENT_ID = "";
 
 /* ============================ DADOS FIXOS ============================ */
 const AREAS = [
@@ -559,6 +564,7 @@ async function boot(){
   catch(e){ state.erro="Falha ao iniciar o Supabase: "+e.message; render(); return; }
   const {data:{session}}=await sb.auth.getSession();
   state.user=session?.user||null;
+  if(session?.provider_token){ state.gcal.connected=true; state.gcal.token=session.provider_token; }
   if(state.user){ await carregarTudo(); } else { render(); }
 }
 async function carregarTudo(){
@@ -594,6 +600,21 @@ async function criarConta(email,senha,nome){
   if(error){toast(error.message,true);render();return}
   if(data.session){ state.user=data.session.user; await carregarTudo(); }
   else { toast("Conta criada! Confirme pelo e-mail e depois entre.");state.authMode="login";render(); }
+}
+async function entrarComGoogle(){
+  state.authBusy=true;render();
+  const {error}=await sb.auth.signInWithOAuth({
+    provider:'google',
+    options:{
+      redirectTo:window.location.href,
+      // pede junto o acesso à Agenda, pra não ter que conectar duas vezes
+      scopes:'email profile https://www.googleapis.com/auth/calendar.events',
+      queryParams:{access_type:'offline',prompt:'consent'}
+    }
+  });
+  // se der erro, o navegador nem chega a redirecionar pro Google — mostramos o aviso aqui.
+  // se der certo, a página é redirecionada pro Google e depois volta sozinha já logada (não passa daqui).
+  if(error){ state.authBusy=false; toast(error.message,true); render(); }
 }
 async function sair(){ await sb.auth.signOut(); state.user=null; state.jogos=[];state.pacientes=[];state.sessoes=[];state.demandas=[];state.sessao=[];state.selDia=new Set(); render(); }
 
@@ -769,6 +790,11 @@ function renderAuth(){
   app().innerHTML=`<div class="center"><div class="auth-card">
     <div class="auth-logo">${LOGO_SVG}</div>
     <p class="muted" style="margin-bottom:20px">${login?'Entre pra acessar seu espaço.':'Crie sua conta.'}</p>
+    <button class="btn google" id="a-google" ${state.authBusy?'disabled':''} style="width:100%">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.91c1.7-1.57 2.69-3.88 2.69-6.62Z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.91-2.26c-.81.54-1.84.86-3.05.86-2.34 0-4.32-1.58-5.03-3.71H.96v2.33A9 9 0 0 0 9 18Z"/><path fill="#FBBC05" d="M3.97 10.71a5.4 5.4 0 0 1 0-3.42V4.96H.96a9 9 0 0 0 0 8.08l3.01-2.33Z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.51.46 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.96l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58Z"/></svg>
+      ${state.authBusy?I.spin:'Entrar com o Google'}
+    </button>
+    <div class="auth-divider">ou</div>
     <div style="display:flex;flex-direction:column;gap:12px">
       ${login?'':'<div><label class="flabel">Seu nome</label><input class="input" id="a-nome" placeholder="ex: Larissa Lamicoski"></div>'}
       <div><label class="flabel">E-mail</label><input class="input" id="a-mail" type="email" value="${esc(state.authEmail||'')}" placeholder="voce@email.com"></div>
@@ -784,6 +810,7 @@ function renderAuth(){
   const go=()=>{const m=$('#a-mail').value.trim(),p=$('#a-pass').value;state.authEmail=m;if(!m||!p)return toast("Preencha e-mail e senha",true);login?entrar(m,p):criarConta(m,p,($('#a-nome')?.value||'').trim())};
   $('#a-mail').oninput=e=>state.authEmail=e.target.value;
   $('#a-go').onclick=go;
+  $('#a-google').onclick=entrarComGoogle;
   $('#a-pass').onkeydown=e=>{if(e.key==='Enter')go()};
   $('#a-toggle').onclick=()=>{state.authEmail=$('#a-mail').value;state.authMode=login?'signup':'login';render()};
 }
@@ -1113,16 +1140,7 @@ function abrirRelatorio(){
 }
 
 /* ============================ AGENDA (GOOGLE CALENDAR) ============================ */
-let gcalTokenClient=null;
 function viewAgenda(){
-  if(!GOOGLE_CLIENT_ID){
-    return `<h2 class="h2 display">Agenda</h2>
-    <p class="lead">Conecte a agenda do Google e veja/agende sessões sem sair do ${esc(BRAND.nome)}.</p>
-    <div class="card" style="padding:20px;max-width:620px">
-      <b style="font-size:14.5px">Ativação necessária (uma vez, pelo administrador)</b>
-      <p class="muted" style="margin-top:8px">A integração usa o login Google da própria profissional — os eventos não passam por nenhum servidor nosso. Pra ativar: crie um <b>OAuth Client ID</b> no Google Cloud Console (com a Calendar API ativa e o endereço do sistema nas origens autorizadas) e cole no campo <code>GOOGLE_CLIENT_ID</code> no topo do código. As instruções passo a passo estão comentadas lá.</p>
-    </div>`;
-  }
   const g=state.gcal;
   if(!g.connected){
     return `<h2 class="h2 display">Agenda</h2>
@@ -1130,7 +1148,7 @@ function viewAgenda(){
     <div class="card" style="padding:24px;max-width:480px;text-align:center">
       ${g.erro?`<p class="muted" style="color:var(--secondary-deep);margin-bottom:12px">${esc(g.erro)}</p>`:''}
       <button class="btn primary" id="btn-gcal-connect" ${g.loading?'disabled':''}>${g.loading?I.spin:I.agenda} Conectar Google Agenda</button>
-      <p class="muted" style="margin-top:12px">Seus eventos ficam só entre o seu navegador e o Google.</p>
+      <p class="muted" style="margin-top:12px">${state.user?.app_metadata?.provider==='email'?'Sua conta atual é por e-mail/senha — ao conectar, você vai autorizar o Google (sem trocar seu login).':'Seus eventos ficam só entre o seu navegador e o Google.'}</p>
     </div>`;
   }
   // agrupa eventos por dia
@@ -1166,20 +1184,9 @@ function viewAgenda(){
   :`<div class="card empty">Nenhum evento nos próximos 14 dias.</div>`}`;
 }
 function gcalConnect(){
-  if(typeof google==='undefined'||!google.accounts){state.gcal.erro="Biblioteca do Google não carregou (sem internet?).";render();return}
-  state.gcal.loading=true;state.gcal.erro=null;render();
-  if(!gcalTokenClient){
-    gcalTokenClient=google.accounts.oauth2.initTokenClient({
-      client_id:GOOGLE_CLIENT_ID,
-      scope:'https://www.googleapis.com/auth/calendar.events',
-      callback:async(resp)=>{
-        if(resp.error){state.gcal.loading=false;state.gcal.erro="Conexão cancelada ou negada.";render();return}
-        state.gcal.token=resp.access_token;state.gcal.connected=true;
-        await gcalCarregar();
-      }
-    });
-  }
-  gcalTokenClient.requestAccessToken({prompt:state.gcal.token?'':'consent'});
+  // reusa o mesmo login com Google, pedindo de novo o consentimento — assim cobre tanto
+  // quem entrou por e-mail/senha quanto quem conectou o Google sem aceitar a Agenda antes.
+  entrarComGoogle();
 }
 async function gcalCarregar(){
   state.gcal.loading=true;render();
