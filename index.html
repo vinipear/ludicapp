@@ -8,7 +8,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Nunito+Sans:wght@400;600;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --paper:#EEF2F2;--card:#FFFFFF;--ink:#243536;--ink-soft:#6E8080;
+  --paper:#EEF2F2;--paper-deep:#E1E9E9;--card:#FFFFFF;--ink:#243536;--ink-soft:#6E8080;
   --primary:#4DA1A9;--primary-deep:#3C858C;--primary-tint:#E1EFF0;
   --deep:#1C4649;--secondary:#F4A261;--secondary-deep:#D9873F;--secondary-tint:#FCEBDA;
   --gold:#E9C46A;--gold-tint:#F8EDCF;--line:#E1E8E8;--cream:#F3F7F7;
@@ -64,7 +64,7 @@ body{font-family:'Nunito Sans',system-ui,sans-serif;color:var(--ink);background:
 .qa:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(36,53,54,.13)}
 .qa.teal{background:var(--primary)}
 .qa.apricot{background:var(--secondary)}
-.qa.plain{background:var(--paper);color:var(--ink);border:1px solid var(--line)}
+.qa.plain{background:var(--paper-deep);color:var(--ink);border:1px solid var(--line)}
 .qa.plain .qa-ic{background:var(--card);color:var(--primary-deep);box-shadow:0 1px 3px rgba(28,70,73,.08)}
 .qa.plain:hover{box-shadow:0 8px 18px rgba(36,53,54,.08)}
 @media(max-width:760px){.qa-grid{grid-template-columns:repeat(2,1fr)}}
