@@ -12,10 +12,11 @@
   --primary:#4DA1A9;--primary-deep:#3C858C;--primary-tint:#E1EFF0;
   --deep:#1C4649;--secondary:#F4A261;--secondary-deep:#D9873F;--secondary-tint:#FCEBDA;
   --gold:#E9C46A;--gold-tint:#F8EDCF;--line:#E1E8E8;--cream:#F3F7F7;
-  /* aliases: mantêm classes antigas funcionando com a nova paleta */
-  --brown-deep:var(--deep);
+  /* vermelho reservado exclusivamente para ações destrutivas (excluir) */
+  --danger:#C0392B;--danger-deep:#A32E22;--danger-tint:#FBEAE7;
+  /* aliases da paleta anterior — mantidos porque muitas classes ainda usam --terra.
+     --brown-deep e --sand-tint foram removidos: não sobrou nenhum uso. */
   --terra:var(--primary);--terra-deep:var(--primary-deep);--terra-tint:var(--primary-tint);
-  --sand-tint:var(--gold-tint);
 }
 body{font-family:'Nunito Sans',system-ui,sans-serif;color:var(--ink);background:var(--paper);min-height:100vh;line-height:1.5;-webkit-font-smoothing:antialiased}
 .display{font-family:'Quicksand',sans-serif;letter-spacing:-.005em}
@@ -29,8 +30,8 @@ body{font-family:'Nunito Sans',system-ui,sans-serif;color:var(--ink);background:
 .side-link:hover{background:var(--paper);color:var(--primary-deep)}
 .side-link.on{background:var(--primary-tint);color:var(--primary-deep)}
 .side-foot{margin-top:auto;padding-top:12px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
-.side-link.danger{color:#C0392B}
-.side-link.danger:hover{background:#FBEAE7;color:#C0392B}
+.side-link.danger{color:var(--danger)}
+.side-link.danger:hover{background:var(--danger-tint);color:var(--danger-deep)}
 .content{flex:1;min-width:0;display:flex;flex-direction:column}
 .topbar{background:var(--card);position:sticky;top:0;z-index:20;border-bottom:1px solid var(--line);padding:14px 28px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .tb-greet{font-size:15px;color:var(--ink-soft);white-space:nowrap;margin-right:auto}
@@ -49,7 +50,7 @@ body{font-family:'Nunito Sans',system-ui,sans-serif;color:var(--ink);background:
 .h2{font-family:'Quicksand',sans-serif;font-size:26px;font-weight:700;color:var(--terra);margin-bottom:4px;letter-spacing:-.01em}
 .lead{color:var(--ink-soft);font-size:14px;margin-bottom:22px;max-width:60ch}
 .card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:0 1px 3px rgba(28,70,73,.05);transition:box-shadow .18s,border-color .18s}
-.item-card:hover,.gcard:hover{box-shadow:0 4px 14px rgba(62,42,30,.07);border-color:#D9C9A8}
+.item-card:hover,.gcard:hover{box-shadow:0 4px 14px rgba(28,70,73,.08);border-color:var(--primary)}
 .hero{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:6px}
 .hero-title{font-size:28px;font-weight:700;color:var(--ink)}
 .hero-sub{color:var(--ink-soft);font-size:14.5px;margin-top:1px}
@@ -70,8 +71,8 @@ body{font-family:'Nunito Sans',system-ui,sans-serif;color:var(--ink);background:
 @media(max-width:760px){.qa-grid{grid-template-columns:repeat(2,1fr)}}
 .set-sec{border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:11px}
 .set-sec>h5{font-family:'Quicksand',sans-serif;font-weight:700;font-size:14.5px;color:var(--terra-deep);display:flex;align-items:center;gap:8px}
-.chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--sand-tint);color:var(--ink)}
-.chip.dim{background:#EFE8D6;color:var(--ink-soft)}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--gold-tint);color:var(--ink)}
+.chip.dim{background:var(--paper-deep);color:var(--ink-soft)}
 .chip.hit{background:var(--terra-tint);color:var(--terra-deep);font-weight:700}
 .chip.demanda{background:var(--secondary-tint);color:var(--secondary-deep)}
 .btn{font-family:inherit;font-weight:600;font-size:14px;border-radius:11px;cursor:pointer;padding:10px 16px;border:1px solid var(--line);background:var(--card);color:var(--ink);display:inline-flex;align-items:center;gap:8px;transition:transform .06s,background .15s,border-color .15s}
@@ -80,10 +81,15 @@ body{font-family:'Nunito Sans',system-ui,sans-serif;color:var(--ink);background:
 .btn:disabled{opacity:.55;cursor:default}
 .btn.primary{background:var(--terra);color:var(--cream);border-color:var(--terra)}
 .btn.primary:hover{background:var(--terra-deep);border-color:var(--terra-deep)}
-.btn.accent{background:var(--brown-deep);color:var(--gold);border-color:var(--brown-deep)}
-.btn.accent:hover{background:#4a2f1f}
+.btn.accent{background:var(--deep);color:var(--gold);border-color:var(--deep)}
+.btn.accent:hover{background:#123033}
 .btn.ghost{background:transparent;border-color:transparent;color:var(--ink-soft);padding:8px 10px}
-.btn.ghost:hover{background:var(--sand-tint);color:var(--ink)}
+.btn.ghost:hover{background:var(--paper);color:var(--ink)}
+/* ação destrutiva — só para excluir de verdade, nunca para ações reversíveis */
+.btn.danger{background:var(--danger);color:#fff;border-color:var(--danger)}
+.btn.danger:hover{background:var(--danger-deep);border-color:var(--danger-deep)}
+.btn.ghost.danger{background:transparent;color:var(--danger);border-color:transparent}
+.btn.ghost.danger:hover{background:var(--danger-tint);color:var(--danger-deep)}
 .btn.sm{padding:7px 12px;font-size:13px}
 .btn:focus-visible,.nav button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.toggle:focus-visible{outline:2px solid var(--terra);outline-offset:2px}
 
@@ -129,7 +135,7 @@ select:hover,.input:hover{border-color:var(--terra)}
 .toggles{display:flex;flex-wrap:wrap;gap:8px}
 .toggle{font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;border-radius:999px;padding:6px 12px;border:1px solid var(--line);background:var(--card);color:var(--ink-soft)}
 .toggle.on{background:var(--terra);color:var(--cream);border-color:var(--terra)}
-.scrim{position:fixed;inset:0;background:rgba(58,36,23,.5);display:grid;place-items:center;padding:20px;z-index:50}
+.scrim{position:fixed;inset:0;background:rgba(28,70,73,.45);display:grid;place-items:center;padding:20px;z-index:50}
 .modal{background:var(--card);border-radius:18px;width:100%;max-width:560px;max-height:88vh;overflow:auto}
 .modal-head{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center}
 .modal-body{padding:20px;display:flex;flex-direction:column;gap:16px}
@@ -178,14 +184,14 @@ select:hover,.input:hover{border-color:var(--terra)}
 .center{min-height:100vh;display:grid;place-items:center;padding:24px}
 .auth-card{background:var(--card);border:1px solid var(--line);border-radius:20px;max-width:400px;width:100%;padding:30px;text-align:center}
 .auth-card .flabel{text-align:left}
-.auth-mark{width:54px;height:54px;border-radius:16px;background:var(--brown-deep);display:grid;place-items:center;margin:0 auto 16px}
+.auth-mark{width:54px;height:54px;border-radius:16px;background:var(--deep);display:grid;place-items:center;margin:0 auto 16px}
 .link{background:none;border:0;color:var(--terra-deep);font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;text-decoration:underline;padding:0}
 .btn.google{background:#fff;color:#3c4043;border-color:var(--line);justify-content:center;font-weight:600}
 .btn.google:hover{background:#f7f7f7;border-color:#c9c9c9}
 .auth-divider{display:flex;align-items:center;gap:10px;margin:16px 0;color:var(--ink-soft);font-size:12px}
 .auth-divider::before,.auth-divider::after{content:"";flex:1;height:1px;background:var(--line)}
-.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--brown-deep);color:var(--cream);padding:12px 18px;border-radius:12px;font-size:13.5px;font-weight:500;z-index:80;box-shadow:0 6px 20px rgba(0,0,0,.2);max-width:90vw}
-.toast.err{background:#8a3b2a}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--deep);color:var(--cream);padding:12px 18px;border-radius:12px;font-size:13.5px;font-weight:500;z-index:80;box-shadow:0 6px 20px rgba(0,0,0,.2);max-width:90vw}
+.toast.err{background:var(--danger-deep)}
 @media (max-width:900px){.tb-greet{display:none}}
 .side-mark{display:none}
 @media (max-width:860px){.plan{grid-template-columns:1fr}.panel{position:static}.sidebar{width:72px;padding:20px 10px;align-items:center}.sidebar .lbl{display:none}.sidebar .logo-svg{display:none}.side-mark{display:grid;place-items:center;padding:4px 0 24px}.side-link{justify-content:center;padding:11px;width:auto}}
@@ -489,9 +495,74 @@ const esc = s => String(s??"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>
 const $ = sel => document.querySelector(sel);
 const app = () => document.getElementById("app");
 const isPlaceholder = () => SUPABASE_URL.includes("SEU-PROJETO") || SUPABASE_ANON_KEY.includes("SUA-CHAVE");
+
+/* ============================ MODO DESENVOLVEDOR ============================
+   Esconde da interface normal as ferramentas que só você usa.
+   Liga sozinho quando o arquivo roda em localhost / file://.
+   Em produção, pra ligar na SUA máquina, abra o console (F12) e rode:
+       ludicaDev(true)     → liga e recarrega
+       ludicaDev(false)    → desliga e recarrega
+   ATENÇÃO: isto é só organização de interface, NÃO é segurança. Qualquer pessoa
+   pode ligar isso no próprio navegador. O que protege os dados de verdade é o
+   RLS no Supabase — nada aqui dentro pode expor dados de outra conta. */
+const DEV = (()=>{
+  try{
+    const h=location.hostname;
+    if(h==='localhost'||h==='127.0.0.1'||location.protocol==='file:')return true;
+    return localStorage.getItem('ludica_dev')==='1';
+  }catch(e){ return false; }
+})();
+window.ludicaDev=(on)=>{ try{ on?localStorage.setItem('ludica_dev','1'):localStorage.removeItem('ludica_dev'); location.reload(); }catch(e){} };
 function hoje(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function fmtData(iso){if(!iso)return'';const p=String(iso).split('-');return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:iso}
 function toast(msg,err){document.querySelectorAll('.toast').forEach(t=>t.remove());const t=document.createElement('div');t.className='toast'+(err?' err':'');t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),3200)}
+
+/* ============================ MENSAGENS DE ERRO HUMANAS ============================
+   O Supabase/Postgres devolve erro técnico em inglês ("duplicate key value violates
+   unique constraint", "JWT expired"…). Nada disso pode chegar na tela de uma psicóloga.
+   Traduz o que dá pra reconhecer; o resto vira uma mensagem genérica amigável.
+   O erro cru vai pro console, pra você conseguir depurar sem expor pro usuário. */
+function erroHumano(e,contexto){
+  const bruto=(e&&(e.message||e.error_description||e.msg))||String(e||'');
+  const m=bruto.toLowerCase();
+  if(typeof console!=='undefined'&&console.debug)console.debug('[ludica]',contexto||'',bruto);
+
+  // conexão
+  if(/failed to fetch|networkerror|network request failed|load failed/.test(m))
+    return 'Sem conexão com a internet. Verifique sua rede e tente de novo.';
+  // sessão / login
+  if(/jwt expired|token is expired|invalid token|not authenticated|session_not_found/.test(m))
+    return 'Sua sessão expirou. Entre de novo pra continuar.';
+  if(/invalid login credentials|invalid_grant/.test(m))
+    return 'E-mail ou senha incorretos.';
+  if(/email not confirmed/.test(m))
+    return 'Confirme seu e-mail pelo link que enviamos antes de entrar.';
+  if(/user already registered|already been registered/.test(m))
+    return 'Já existe uma conta com esse e-mail. Tente entrar.';
+  if(/password should be at least/.test(m))
+    return 'A senha precisa ter pelo menos 6 caracteres.';
+  if(/unable to validate email|invalid email/.test(m))
+    return 'Esse e-mail não parece válido.';
+  if(/rate limit|too many requests/.test(m))
+    return 'Muitas tentativas seguidas. Espere um minutinho e tente de novo.';
+  // banco
+  if(/duplicate key|already exists|unique constraint/.test(m))
+    return 'Esse item já existe na sua lista.';
+  if(/violates foreign key|foreign key constraint/.test(m))
+    return 'Esse item está ligado a outros registros e não pode ser removido agora.';
+  if(/row-level security|permission denied|not authorized|policy/.test(m))
+    return 'Você não tem permissão pra fazer isso. Se persistir, entre em contato com o suporte.';
+  if(/relation .* does not exist|schema cache|find the table/.test(m))
+    return 'Esse recurso ainda não está disponível na sua conta.';
+  if(/value too long/.test(m))
+    return 'O texto ficou longo demais. Tente encurtar.';
+  if(/null value|not-null constraint/.test(m))
+    return 'Faltou preencher um campo obrigatório.';
+
+  return contexto||'Algo não saiu como esperado. Tente de novo em instantes.';
+}
+/* atalho: mostra o erro traduzido no toast */
+const toastErro=(e,contexto)=>toast(erroHumano(e,contexto),true);
 const iniciaisDe = nome => {const p=String(nome||'').trim().split(/\s+/).filter(Boolean);if(!p.length)return '—';return (p[0][0]+(p.length>1?p[p.length-1][0]:'')).toUpperCase();};
 
 /* ============================ PERFIL (nome/avatar/gênero do usuário) ============================
@@ -594,9 +665,9 @@ function usoPorNome(pid){
 /* ============================ SUPABASE / AUTH ============================ */
 async function boot(){
   if(isPlaceholder()){render();return}
-  if(typeof supabase==="undefined"){state.erro="Não consegui carregar a biblioteca do Supabase (sem internet?).";render();return}
+  if(typeof supabase==="undefined"){state.erro="Não consegui conectar ao servidor. Verifique sua internet e recarregue a página.";render();return}
   try{ const {createClient}=supabase; sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY); }
-  catch(e){ state.erro="Falha ao iniciar o Supabase: "+e.message; render(); return; }
+  catch(e){ if(console&&console.debug)console.debug("[ludica] init",e); state.erro="Não consegui conectar ao servidor. Recarregue a página — se continuar, tente de novo em alguns minutos."; render(); return; }
   const {data:{session}}=await sb.auth.getSession();
   state.user=session?.user||null;
   if(session?.provider_token){ state.gcal.connected=true; state.gcal.token=session.provider_token; }
@@ -617,13 +688,13 @@ async function carregarTudo(){
     try{ const d=await sb.from('demandas').select('*').order('nome'); if(!d.error) state.demandas=(d.data||[]).map(demFromRow); }catch(e){}
     if(!state.pacientes.find(x=>x.id===state.pid)) state.pid=state.pacientes[0]?.id||"";
     state.loading=false; render(); _resetInatividade();
-  }catch(e){ state.loading=false; toast("Erro ao carregar: "+(e.message||e),true); render(); }
+  }catch(e){ state.loading=false; toastErro(e,"Não consegui carregar seus dados agora. Verifique a conexão e tente de novo."); render(); }
 }
 async function entrar(email,senha){
   state.authBusy=true;render();
   const {error}=await sb.auth.signInWithPassword({email,password:senha});
   state.authBusy=false;
-  if(error){toast(error.message,true);render();return}
+  if(error){toastErro(error,"Não consegui entrar. Confira o e-mail e a senha.");render();return}
   const {data:{session}}=await sb.auth.getSession();
   state.user=session?.user||null;
   await carregarTudo();
@@ -633,7 +704,7 @@ async function criarConta(email,senha,nome){
   // registra a data do aceite da política no metadata — serve de prova de consentimento (LGPD)
   const {data,error}=await sb.auth.signUp({email,password:senha,options:{data:{nome:nome||email.split('@')[0],lgpd_aceite:new Date().toISOString(),lgpd_versao:"2026-07"}}});
   state.authBusy=false;
-  if(error){toast(error.message,true);render();return}
+  if(error){toastErro(error,"Não consegui criar a conta agora. Tente de novo em instantes.");render();return}
   if(data.session){ state.user=data.session.user; await carregarTudo(); }
   else { toast("Conta criada! Confirme pelo e-mail e depois entre.");state.authMode="login";render(); }
 }
@@ -650,7 +721,7 @@ async function entrarComGoogle(){
   });
   // se der erro, o navegador nem chega a redirecionar pro Google — mostramos o aviso aqui.
   // se der certo, a página é redirecionada pro Google e depois volta sozinha já logada (não passa daqui).
-  if(error){ state.authBusy=false; toast(error.message,true); render(); }
+  if(error){ state.authBusy=false; toastErro(error,"Não consegui abrir o login do Google. Tente de novo."); render(); }
 }
 async function sair(){ await sb.auth.signOut(); state.user=null; state.jogos=[];state.pacientes=[];state.sessoes=[];state.demandas=[];state.sessao=[];state.selDia=new Set(); render(); }
 
@@ -698,11 +769,11 @@ async function salvarPaciente(f){
   const payload={iniciais:f.iniciais,idade:f.idade,demandas:f.demandas,obs:f.obs};
   if(f.id){
     const {data,error}=await sb.from('pacientes').update(payload).eq('id',f.id).select().single();
-    if(error)return toast(error.message,true);
+    if(error)return toastErro(error,"Não consegui salvar as alterações do paciente.");
     state.pacientes=state.pacientes.map(x=>x.id===f.id?pacFromRow(data):x);
   }else{
     const {data,error}=await sb.from('pacientes').insert({...payload,user_id:state.user.id}).select().single();
-    if(error)return toast(error.message,true);
+    if(error)return toastErro(error,"Não consegui cadastrar o paciente.");
     state.pacientes=[...state.pacientes,pacFromRow(data)].sort((a,b)=>a.iniciais.localeCompare(b.iniciais));
     if(!state.pid)state.pid=data.id;
   }
@@ -712,9 +783,9 @@ async function excluirPaciente(id){
   // LGPD (direito ao esquecimento): apaga também todas as sessões do paciente,
   // senão os dados clínicos ficariam órfãos no banco mesmo após a "exclusão".
   const {error:errSess}=await sb.from('sessoes').delete().eq('paciente_id',id);
-  if(errSess)return toast("Não consegui excluir as sessões do paciente: "+errSess.message,true);
+  if(errSess)return toastErro(errSess,"Não consegui excluir as sessões desse paciente. Nada foi apagado — tente de novo.");
   const {error}=await sb.from('pacientes').delete().eq('id',id);
-  if(error)return toast(error.message,true);
+  if(error)return toastErro(error,"Não consegui excluir o paciente.");
   state.sessoes=state.sessoes.filter(s=>s.pid!==id);
   state.pacientes=state.pacientes.filter(x=>x.id!==id);
   if(state.pid===id)state.pid=state.pacientes[0]?.id||"";
@@ -740,18 +811,18 @@ async function salvarJogo(f){
   const payload={nome:f.nome,areas:f.areas,idade_min:f.min,idade_max:f.max,obs:f.obs,tipo:f.tipo||'jogo'};
   if(f.id){
     const {data,error}=await safeWrite(pl=>sb.from('jogos').update(pl).eq('id',f.id).select().single(),payload,['tipo']);
-    if(error)return toast(error.message,true);
+    if(error)return toastErro(error,"Não consegui salvar as alterações.");
     state.jogos=state.jogos.map(x=>x.id===f.id?jogoFromRow(data):x);
   }else{
     const {data,error}=await safeWrite(pl=>sb.from('jogos').insert({...pl,user_id:state.user.id}).select().single(),payload,['tipo']);
-    if(error)return toast(error.message,true);
+    if(error)return toastErro(error,"Não consegui cadastrar o item.");
     state.jogos=[...state.jogos,jogoFromRow(data)].sort((a,b)=>a.nome.localeCompare(b.nome));
   }
   closeModal();render();
 }
 async function excluirJogo(id){
   const {error}=await sb.from('jogos').delete().eq('id',id);
-  if(error)return toast(error.message,true);
+  if(error)return toastErro(error,"Não consegui excluir o item.");
   state.jogos=state.jogos.filter(x=>x.id!==id);render();
 }
 async function popularExemplos(){
@@ -763,7 +834,7 @@ async function popularExemplos(){
   for(let i=0;i<rows.length;i+=25){
     const chunk=rows.slice(i,i+25);
     const {data,error}=await sb.from('jogos').insert(chunk).select();
-    if(error){toast("Parou em "+inseridos+" — "+error.message,true);break}
+    if(error){toastErro(error,"Consegui adicionar "+inseridos+" item(ns) antes de dar problema. Tente de novo pra completar.");break}
     state.jogos=[...state.jogos,...data.map(jogoFromRow)];
     inseridos+=data.length;render();
   }
@@ -774,7 +845,7 @@ async function salvarSessao(){
   const p=state.pacientes.find(x=>x.id===state.pid); if(!p||!state.sessao.length)return;
   const jogos=state.sessao.map(id=>{const g=state.jogos.find(x=>x.id===id);return{id,nome:g?g.nome:'',reacao:''}});
   const {data,error}=await sb.from('sessoes').insert({user_id:state.user.id,paciente_id:p.id,data:state.dataSessao||hoje(),objetivo:state.objetivo,nota:state.nota,status:'planejada',jogos}).select().single();
-  if(error)return toast(error.message,true);
+  if(error)return toastErro(error,"Não consegui salvar a sessão. Seus jogos continuam montados aqui — tente de novo.");
   const s=sessFromRow(data);
   state.sessoes=[s,...state.sessoes];
   state.sessao=[];state.objetivo="";state.nota="";state.dataSessao="";
@@ -782,7 +853,7 @@ async function salvarSessao(){
 }
 async function excluirSessao(id){
   const {error}=await sb.from('sessoes').delete().eq('id',id);
-  if(error)return toast(error.message,true);
+  if(error)return toastErro(error,"Não consegui excluir a sessão.");
   state.sessoes=state.sessoes.filter(x=>x.id!==id);closeModal();render();
 }
 
@@ -841,21 +912,32 @@ function render(){
   renderApp();
 }
 function renderSetup(){
+  // Só dispara se as chaves não estiverem preenchidas — em produção isso nunca acontece.
+  // Fica como rede de segurança: no DEV mostra o passo a passo técnico; fora dele,
+  // uma mensagem que não expõe nome de serviço, arquivo de SQL nem chave de config.
   app().innerHTML=`<div class="center"><div class="auth-card">
     <div class="auth-mark">${MARKC}</div>
-    <h1 class="display" style="font-size:24px;color:var(--terra);margin-bottom:6px">Quase lá</h1>
-    <p class="muted" style="margin-bottom:14px">Pra ligar na nuvem, abra este arquivo e preencha no topo do código:</p>
-    <div class="plano-jogo" style="font-family:monospace;font-size:12.5px;line-height:1.9">SUPABASE_URL = "https://seu-projeto.supabase.co"<br>SUPABASE_ANON_KEY = "sua-chave-anon"</div>
-    <p class="muted" style="margin-top:14px">Os valores estão em <b>Supabase → Project Settings → Data API</b>. E rode o arquivo <b>ludica_supabase.sql</b> no SQL Editor uma vez.</p>
+    ${DEV?`
+      <h1 class="display" style="font-size:24px;color:var(--terra);margin-bottom:6px">[dev] Configuração pendente</h1>
+      <p class="muted" style="margin-bottom:14px">Preencha no topo do arquivo:</p>
+      <div class="plano-jogo" style="font-family:monospace;font-size:12.5px;line-height:1.9">SUPABASE_URL = "https://seu-projeto.supabase.co"<br>SUPABASE_ANON_KEY = "sua-chave-anon"</div>
+      <p class="muted" style="margin-top:14px">Os valores estão em <b>Supabase → Project Settings → Data API</b>. E rode o <b>ludica_supabase.sql</b> no SQL Editor uma vez.</p>
+    `:`
+      <h1 class="display" style="font-size:22px;color:var(--terra);margin-bottom:6px">Estamos em manutenção</h1>
+      <p class="muted">O Lúdica está temporariamente indisponível. Tente de novo daqui a pouco — se continuar assim, fale com o suporte.</p>
+    `}
   </div></div>`;
 }
 function renderErro(){
   app().innerHTML=`<div class="center"><div class="auth-card"><div class="auth-mark">${MARKC}</div>
-    <h1 class="display" style="font-size:22px;color:var(--terra);margin-bottom:6px">Ops</h1>
-    <p class="muted">${esc(state.erro)}</p></div></div>`;
+    <h1 class="display" style="font-size:22px;color:var(--terra);margin-bottom:6px">Algo deu errado</h1>
+    <p class="muted" style="margin-bottom:16px">${esc(state.erro)}</p>
+    <button class="btn primary" id="e-reload" style="width:100%;justify-content:center">Recarregar a página</button></div></div>`;
+  const b=$('#e-reload'); if(b)b.onclick=()=>location.reload();
 }
 function renderLoading(){
-  app().innerHTML=`<div class="center"><div style="text-align:center;color:var(--terra)">${I.spin}<p class="muted" style="margin-top:10px">Carregando…</p></div></div>`;
+  app().innerHTML=`<div class="center"><div style="text-align:center;color:var(--terra)">${I.spin}
+    <p class="muted" style="margin-top:10px">Carregando seus pacientes e jogos…</p></div></div>`;
 }
 function renderAuth(){
   const login=state.authMode==="login";
@@ -907,6 +989,14 @@ const NAV_ITEMS=[
   {v:'pacientes',icon:'user',label:'Pacientes'},
   {v:'jogos',icon:'brain',label:'Jogos'}
 ];
+/* Botão de notificações — ainda sem comportamento definido, então fica só no modo
+   dev pra não entregar um botão morto pra quem usa o sistema no consultório.
+   Quando você definir o que ele faz: troque o "DEV" abaixo por "true" e ligue o
+   handler em wire() (o handler já está lá, procure por #btn-notif). */
+function botaoNotificacoesHTML(){
+  if(!DEV)return '';
+  return `<button class="icon-btn" id="btn-notif" title="[dev] Notificações — ainda sem função">${I.bell}</button>`;
+}
 function renderApp(){
   const nomeDona=perfilNome();
   const primeiro=nomeDona.split(' ')[0]||nomeDona;
@@ -926,7 +1016,7 @@ function renderApp(){
       <div class="content">
         <header class="topbar">
           <div class="tb-greet">Bem-vindo(a), <b>${esc(primeiro||'')}</b></div>
-          <button class="icon-btn" title="Notificações">${I.bell}</button>
+          ${botaoNotificacoesHTML()}
           <button class="icon-btn" id="btn-config" title="Configurações">${I.gear}</button>
           ${avatarHTML('owner-av')}
         </header>
@@ -966,7 +1056,13 @@ function viewPlanejar(){
     <button class="qa plain" data-qa="banco"><span class="qa-ic">${I.brain}</span>Banco de jogos</button>
   </div>`;
   if(!state.pacientes.length){
-    return hero+`<h2 class="h2 display">Planejar sessão</h2><div class="card empty" style="margin-top:8px">Cadastre um paciente primeiro — clique em <b>Novo paciente</b> acima.</div>`;
+    return hero+`<h2 class="h2 display">Planejar sessão</h2>
+    <div class="card" style="margin-top:8px;padding:32px 24px;text-align:center">
+      <div style="color:var(--terra);display:flex;justify-content:center;margin-bottom:10px">${I.user}</div>
+      <b class="display" style="font-size:17px;color:var(--ink);display:block;margin-bottom:6px">Vamos começar pelo primeiro paciente</b>
+      <p class="muted" style="max-width:44ch;margin:0 auto 18px">Com o paciente cadastrado, o Lúdica cruza a demanda dele com o que cada jogo trabalha e monta a sessão junto com você.</p>
+      <button class="btn primary" data-qa="novo-pac" style="margin:0 auto">${I.plus} Cadastrar primeiro paciente</button>
+    </div>`;
   }
   return hero+`
   <h2 class="h2 display">Planejar sessão</h2>
@@ -1014,7 +1110,7 @@ function viewPlanejar(){
                 <div class="tags">${g.areas.map(a=>`<span class="chip ${g.hits.includes(a)?'hit':'dim'}">${esc(a)}</span>`).join('')}</div>
               </div></div>`;
           }).join('')
-          : `<div class="card empty">Nenhum jogo do banco bate com essa demanda ainda. Cadastra jogos no banco.</div>`
+          : `<div class="card empty">Nenhum jogo do seu banco combina com essa demanda ainda. Cadastre jogos em <b>Jogos</b> pra ver sugestões aqui.</div>`
         }</div>
       `:''}
     </div>
@@ -1026,7 +1122,7 @@ function viewPlanejar(){
           <div class="order"><button data-mv="${id}" data-d="-1">${I.up}</button><button data-mv="${id}" data-d="1">${I.down}</button></div>
           <span style="font-weight:600;font-size:13.5px;flex:1">${i+1}. ${esc(g.nome)}</span>
           <button class="btn ghost" style="padding:6px" data-rm="${id}">${I.x}</button></div>`;
-      }).join('') : `<div class="empty">Adiciona jogos da lista pra montar a sessão.</div>`}
+      }).join('') : `<div class="empty">Adicione jogos da lista ao lado pra montar a sessão.</div>`}
       <div style="padding:15px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:12px">
         <div><label class="flabel">Data da sessão</label><input class="input" id="in-data" type="date" value="${esc(state.dataSessao||hoje())}"></div>
         <div><label class="flabel">Objetivo da sessão</label><input class="input" id="in-obj" placeholder="ex: trabalhar controle inibitório" value="${esc(state.objetivo)}"></div>
@@ -1103,7 +1199,7 @@ function viewSessoesBody(){
         }).join('')}
       </div>
     </div>`;
-  }).join(''):`<div class="card empty">Nenhuma sessão registrada ainda. Monta uma no <b>Planejar</b> e clica em "Salvar sessão".</div>`}`;
+  }).join(''):`<div class="card empty">Nenhuma sessão registrada ainda. Monte uma em <b>Planejar</b> e salve — ela aparece aqui.</div>`}`;
 }
 function fmtDiaLongo(iso){
   if(iso==='—')return'Sem data';
@@ -1125,7 +1221,7 @@ function areasDaSessao(s){
   return [...set];
 }
 function viewEvolucao(){
-  if(!state.pacientes.length)return `<h2 class="h2 display">Evolução do paciente</h2><div class="card empty" style="margin-top:8px">Cadastre um paciente primeiro.</div>`;
+  if(!state.pacientes.length)return `<h2 class="h2 display">Evolução do paciente</h2><div class="card empty" style="margin-top:8px">Cadastre um paciente em <b>Pacientes</b> pra acompanhar a evolução dele aqui.</div>`;
   if(!state.evoPid||!state.pacientes.find(x=>x.id===state.evoPid))state.evoPid=state.pid||state.pacientes[0].id;
   const p=state.pacientes.find(x=>x.id===state.evoPid);
   const sess=sessoesDoPaciente(p.id);
@@ -1182,7 +1278,7 @@ function viewEvolucao(){
         ${s.nota?`<div class="why" style="margin-top:4px"><b>Nota:</b> ${esc(s.nota)}</div>`:''}
       </div></div>`;
   }).join('')}</div>`
-  :`<div class="card empty">Nenhuma sessão registrada pra este paciente ainda.</div>`}`;
+  :`<div class="card empty">Nenhuma sessão registrada pra este paciente ainda. Assim que você salvar a primeira, a evolução aparece aqui.</div>`}`;
 }
 function abrirRelatorio(){
   const p=state.pacientes.find(x=>x.id===state.evoPid); if(!p)return;
@@ -1265,7 +1361,7 @@ function viewAgenda(){
         ${ev.htmlLink?`<a class="btn ghost" style="padding:6px 10px;text-decoration:none" href="${esc(ev.htmlLink)}" target="_blank" rel="noopener">abrir ↗</a>`:''}
       </div>`).join('')}
     </div>`).join('')
-  :`<div class="card empty">Nenhum evento nos próximos 14 dias.</div>`}`;
+  :`<div class="card empty">Nenhum compromisso nos próximos 14 dias.</div>`}`;
 }
 function gcalConnect(){
   // reusa o mesmo login com Google, pedindo de novo o consentimento — assim cobre tanto
@@ -1283,7 +1379,7 @@ async function gcalCarregar(){
     const data=await r.json();
     state.gcal.events=data.items||[];
     state.gcal.loading=false;render();
-  }catch(e){state.gcal.loading=false;state.gcal.erro="Erro ao carregar: "+e.message;state.gcal.connected=false;render()}
+  }catch(e){state.gcal.loading=false;state.gcal.erro=erroHumano(e,"Não consegui carregar sua agenda agora.");state.gcal.connected=false;render()}
 }
 function gcalNovoEvento(){
   const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -1313,7 +1409,7 @@ function gcalNovoEvento(){
       });
       if(!r.ok)throw new Error("HTTP "+r.status);
       toast("Evento criado na Google Agenda.");closeModal();gcalCarregar();
-    }catch(e){toast("Erro ao criar: "+e.message,true)}
+    }catch(e){toastErro(e,"Não consegui criar o evento na Google Agenda. Tente de novo.")}
   };
 }
 
@@ -1338,14 +1434,19 @@ function gridPac(){
       </div>
       <div class="tags">${p.demandas.map(d=>`<span class="chip demanda">${esc(d)}</span>`).join('')}</div>
       ${p.obs?`<div class="why">${esc(p.obs)}</div>`:''}
-    </div>`).join('')}</div>`:`<div class="card empty">Nenhum paciente encontrado pra essa busca.</div>`):`<div class="card empty">Nenhum paciente ainda. Clica em "Novo paciente".</div>`;
+    </div>`).join('')}</div>`:`<div class="card empty">Nenhum paciente encontrado pra essa busca.</div>`):`<div class="card" style="padding:32px 24px;text-align:center">
+      <div style="color:var(--terra);display:flex;justify-content:center;margin-bottom:10px">${I.user}</div>
+      <b class="display" style="font-size:17px;color:var(--ink);display:block;margin-bottom:6px">Nenhum paciente cadastrado</b>
+      <p class="muted" style="max-width:42ch;margin:0 auto 18px">Cadastre a demanda e a idade de cada criança — é o que permite ao Lúdica sugerir os jogos certos pra cada sessão.</p>
+      <button class="btn primary" id="btn-novo-pac-empty" style="margin:0 auto">${I.plus} Novo paciente</button>
+    </div>`;
 }
 function viewJogos(){
   return `
   <div style="display:flex;align-items:center;margin-bottom:22px;gap:16px;flex-wrap:wrap">
     <div><h2 class="h2 display">Banco de jogos e recursos</h2><p class="muted">Jogos trabalham funções cognitivas; recursos são atividades projetivas que abrem o mundo subjetivo da criança.</p></div>
     <input class="input" id="in-busca" style="width:170px;margin-left:auto" placeholder="Buscar" value="${esc(state.buscaJogos)}">
-    <button class="btn" id="btn-exemplos">${I.plus} Carregar meus jogos</button>
+    ${DEV?`<button class="btn" id="btn-exemplos" title="Ferramenta interna — não aparece pra usuários">${I.plus} [dev] Carregar acervo base</button>`:''}
     <button class="btn" id="btn-import">${I.upload} Importar (IA)</button>
     <button class="btn primary" id="btn-novo-jogo">${I.plus} Novo item</button>
   </div>
@@ -1365,14 +1466,28 @@ function gridJogos(){
       </div>
       <div class="tags">${g.areas.map(a=>`<span class="chip">${esc(a)}</span>`).join('')}</div>
       ${g.obs?`<div class="why">${esc(g.obs)}</div>`:''}
-    </div>`).join('')}</div>`:`<div class="card empty">Nenhum item nesse filtro${state.buscaJogos?' pra essa busca':''}.</div>`):`<div class="card empty">Banco ainda vazio. Clica em <b>"Carregar meus jogos"</b> aqui em cima pra subir a sua lista.</div>`;
+    </div>`).join('')}</div>`:`<div class="card empty">Nenhum item nesse filtro${state.buscaJogos?' pra essa busca':''}.</div>`):`<div class="card" style="padding:32px 24px;text-align:center">
+      <div style="color:var(--terra);display:flex;justify-content:center;margin-bottom:10px">${I.brain}</div>
+      <b class="display" style="font-size:17px;color:var(--ink);display:block;margin-bottom:6px">Seu banco de jogos está vazio</b>
+      <p class="muted" style="max-width:46ch;margin:0 auto 18px">Cadastre os jogos e recursos que você já usa no consultório. É a partir deles que o Lúdica monta as sugestões pra cada paciente.</p>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <button class="btn primary" id="btn-novo-jogo-empty">${I.plus} Cadastrar primeiro jogo</button>
+        <button class="btn" id="btn-import-empty">${I.upload} Importar de uma planilha</button>
+      </div>
+      <p class="muted" style="font-size:12px;margin-top:14px">Já tem sua lista em Excel? A importação lê a planilha e organiza tudo sozinha.</p>
+    </div>`;
 }
 
 /* ============================ EVENTOS ============================ */
 function wire(){
   document.querySelectorAll('.side-link[data-v]').forEach(b=>b.onclick=()=>{state.view=b.dataset.v;render()});
+  const btnNotif=$('#btn-notif'); if(btnNotif)btnNotif.onclick=()=>toast('[dev] Notificações ainda não têm comportamento definido.');
   const btnSuporte=$('#btn-suporte'); if(btnSuporte)btnSuporte.onclick=()=>toast('Suporte chega em breve por aqui 💬');
-  const btnSair=$('#btn-sair'); if(btnSair)btnSair.onclick=()=>{if(confirm('Sair da conta?'))sair()};
+  const btnSair=$('#btn-sair'); if(btnSair)btnSair.onclick=()=>confirmar({
+    titulo:'Sair da conta?',
+    texto:'Você vai precisar entrar de novo pra acessar seus pacientes. Nada é apagado.',
+    confirmarLabel:'Sair',destrutivo:false,onConfirm:sair
+  });
   const cfg=$('#btn-config'); if(cfg)cfg.onclick=openConfig;
   document.querySelectorAll('[data-qa]').forEach(b=>b.onclick=()=>{const a=b.dataset.qa;if(a==='novo-pac')modalPaciente(null);else if(a==='novo-jogo')modalJogo(null);else if(a==='hist'){state.view='sessoes';render()}else if(a==='banco'){state.view='jogos';render()}});
 
@@ -1395,9 +1510,15 @@ function wire(){
   const gc=$('#btn-gcal-connect'); if(gc)gc.onclick=gcalConnect;
   const gr=$('#btn-gcal-refresh'); if(gr)gr.onclick=gcalCarregar;
   const gn=$('#btn-gcal-novo'); if(gn)gn.onclick=gcalNovoEvento;
-  const go=$('#btn-gcal-out'); if(go)go.onclick=()=>{if(confirm('Desconectar da Google Agenda?')){state.gcal={connected:false,token:null,events:[],loading:false,erro:null};render()}};
+  const go=$('#btn-gcal-out'); if(go)go.onclick=()=>confirmar({
+    titulo:'Desconectar a Google Agenda?',
+    texto:'Seus compromissos deixam de aparecer aqui. Nenhum evento é apagado da sua agenda do Google, e você pode reconectar quando quiser.',
+    confirmarLabel:'Desconectar',destrutivo:false,
+    onConfirm:()=>{state.gcal={connected:false,token:null,events:[],loading:false,erro:null};render()}
+  });
 
   const bp=$('#btn-novo-pac'); if(bp)bp.onclick=()=>modalPaciente(null);
+  const bpe=$('#btn-novo-pac-empty'); if(bpe)bpe.onclick=()=>modalPaciente(null);
   const buscaPac=$('#in-busca-pac'); if(buscaPac)buscaPac.oninput=()=>{
     state.buscaPac=buscaPac.value;
     const grid=$('#pac-grid'); if(grid){grid.innerHTML=gridPac();wirePacGrid()}
@@ -1414,8 +1535,10 @@ function wire(){
     const grid=$('#jogos-grid'); if(grid){grid.innerHTML=gridJogos();wireJogosGrid()}
   });
   const bj=$('#btn-novo-jogo'); if(bj)bj.onclick=()=>modalJogo(null);
+  const bje=$('#btn-novo-jogo-empty'); if(bje)bje.onclick=()=>modalJogo(null);
   const bex=$('#btn-exemplos'); if(bex)bex.onclick=popularExemplos;
   const bim=$('#btn-import'); if(bim)bim.onclick=abrirImport;
+  const bime=$('#btn-import-empty'); if(bime)bime.onclick=abrirImport;
   wireJogosGrid();
 }
 function wireSessoesView(){
@@ -1440,14 +1563,31 @@ function wirePacGrid(){
   document.querySelectorAll('[data-edit-pac]').forEach(b=>b.onclick=()=>modalPaciente(state.pacientes.find(p=>p.id===b.dataset.editPac)));
   document.querySelectorAll('[data-exp-pac]').forEach(b=>b.onclick=()=>exportarPaciente(b.dataset.expPac));
   document.querySelectorAll('[data-del-pac]').forEach(b=>b.onclick=()=>{
-    const p=state.pacientes.find(x=>x.id===b.dataset.delPac);
-    const n=sessoesDoPaciente(b.dataset.delPac).length;
-    if(confirm(`Excluir ${p?p.iniciais:'este paciente'} PERMANENTEMENTE?\n\nIsso apaga também ${n} sessão(ões) registrada(s). Não dá pra desfazer.\n\nDica: exporte os dados antes (botão de exportar no card) se precisar guardar o histórico.`))excluirPaciente(b.dataset.delPac);
+    const id=b.dataset.delPac;
+    const p=state.pacientes.find(x=>x.id===id);
+    const n=sessoesDoPaciente(id).length;
+    confirmar({
+      titulo:'Excluir paciente?',
+      item:p?p.iniciais:'este paciente',
+      texto:`Essa ação <b>não pode ser desfeita</b>. Todos os dados desse paciente serão apagados${n?`, incluindo <b>${n} sessão${n>1?'ões':''}</b> do histórico`:''}.<br><br>Se precisar guardar o histórico, cancele e use o botão de exportar no card antes.`,
+      onConfirm:()=>excluirPaciente(id)
+    });
   });
 }
 function wireJogosGrid(){
   document.querySelectorAll('[data-edit-jogo]').forEach(b=>b.onclick=()=>modalJogo(state.jogos.find(g=>g.id===b.dataset.editJogo)));
-  document.querySelectorAll('[data-del-jogo]').forEach(b=>b.onclick=()=>{if(confirm('Excluir este jogo?'))excluirJogo(b.dataset.delJogo)});
+  document.querySelectorAll('[data-del-jogo]').forEach(b=>b.onclick=()=>{
+    const id=b.dataset.delJogo;
+    const g=state.jogos.find(x=>x.id===id);
+    const tipo=(g?.tipo||'jogo')==='recurso'?'recurso':'jogo';
+    const usos=state.sessoes.filter(s=>(s.jogos||[]).some(j=>j.id===id)).length;
+    confirmar({
+      titulo:`Excluir ${tipo}?`,
+      item:g?g.nome:`este ${tipo}`,
+      texto:`Essa ação <b>não pode ser desfeita</b>. O ${tipo} sai do seu banco e não aparece mais nas sugestões.${usos?`<br><br>Ele já foi usado em <b>${usos} sessão${usos>1?'ões':''}</b> — o histórico dessas sessões é preservado, mas o item não poderá mais ser planejado.`:''}`,
+      onConfirm:()=>excluirJogo(id)
+    });
+  });
 }
 function toggleSessao(id){state.sessao=state.sessao.includes(id)?state.sessao.filter(x=>x!==id):[...state.sessao,id];render()}
 function addByName(nome){const g=state.jogos.find(x=>x.nome===nome);if(g&&!state.sessao.includes(g.id)){state.sessao.push(g.id);render()}}
@@ -1456,6 +1596,48 @@ function move(id,d){const i=state.sessao.indexOf(id),j=i+d;if(j<0||j>=state.sess
 /* ============================ MODAIS ============================ */
 function closeModal(){const m=$('#scrim');if(m)m.remove()}
 function openModal(html){closeModal();const d=document.createElement('div');d.className='scrim';d.id='scrim';d.innerHTML=`<div class="modal">${html}</div>`;d.onclick=e=>{if(e.target===d)closeModal()};document.body.appendChild(d)}
+
+/* ============================ CONFIRMAÇÃO (componente reutilizável) ============================
+   Substitui o confirm() nativo do navegador em TODA ação destrutiva ou irreversível.
+   Regras de segurança embutidas:
+   - o foco inicial fica no "Cancelar", então Enter/Espaço nunca exclui sem querer
+   - Esc cancela; clicar fora cancela
+   - o botão destrutivo é o único vermelho da interface
+   Uso:
+     confirmar({
+       titulo:'Excluir paciente?',
+       item:'Maria Eduarda Silva',        // opcional — nome do item, destacado
+       texto:'Essa ação não pode ser desfeita.',
+       confirmarLabel:'Sim, excluir',     // opcional
+       destrutivo:true,                   // opcional (default true)
+       onConfirm:()=>{ ... }
+     })
+*/
+function confirmar({titulo,item,texto,confirmarLabel,cancelarLabel,destrutivo=true,onConfirm}){
+  const anterior=document.activeElement;
+  openModal(`
+    <div class="modal-head">
+      <b class="display" style="font-size:19px;color:${destrutivo?'var(--danger)':'var(--terra)'}">${esc(titulo)}</b>
+    </div>
+    <div class="modal-body" style="gap:12px">
+      ${item?`<div class="plano-jogo" style="padding:12px 14px;background:${destrutivo?'var(--danger-tint)':'var(--terra-tint)'};border-color:transparent">
+        <span class="muted" style="font-size:12.5px">Você está prestes a excluir</span>
+        <div style="font-weight:700;font-size:15px;margin-top:2px;color:var(--ink)">${esc(item)}</div>
+      </div>`:''}
+      <p style="font-size:13.5px;color:var(--ink-soft);line-height:1.55;margin:0">${texto||''}</p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" id="cf-no">${esc(cancelarLabel||'Cancelar')}</button>
+      <button class="btn ${destrutivo?'danger':'primary'}" id="cf-yes">${destrutivo?I.trash:''} ${esc(confirmarLabel||(destrutivo?'Sim, excluir':'Confirmar'))}</button>
+    </div>`);
+  const fechar=()=>{ document.removeEventListener('keydown',onKey); closeModal(); if(anterior&&anterior.focus)try{anterior.focus()}catch(e){} };
+  const onKey=e=>{ if(e.key==='Escape'){e.preventDefault();fechar()} };
+  document.addEventListener('keydown',onKey);
+  $('#cf-no').onclick=fechar;
+  $('#cf-yes').onclick=()=>{ fechar(); onConfirm&&onConfirm(); };
+  // foco no Cancelar: evita exclusão acidental por Enter
+  setTimeout(()=>$('#cf-no')?.focus(),0);
+}
 
 function modalPaciente(p){
   const editing=!!p; const f=p?{...p}:{iniciais:"",idade:7,demandas:[],obs:""};
@@ -1835,13 +2017,21 @@ function modalSessao(id){
         <input type="checkbox" id="s-real" ${s.status==='realizada'?'checked':''} style="width:18px;height:18px;accent-color:var(--terra)"> Marcar como realizada</label>
     </div>
     <div class="modal-foot" style="justify-content:space-between">
-      <button class="btn ghost" id="s-del" style="color:var(--terra-deep)">${I.trash} Excluir</button>
+      <button class="btn ghost danger" id="s-del">${I.trash} Excluir</button>
       <div style="display:flex;gap:10px"><button class="btn" id="s-print">${I.print} Imprimir</button><button class="btn primary" id="s-save">${I.save} Salvar</button></div>
     </div>`);
   wireJogosSection();
   $('#mx').onclick=closeModal;
   $('#s-print').onclick=()=>window.print();
-  $('#s-del').onclick=()=>{if(confirm('Excluir esta sessão do histórico?'))excluirSessao(id)};
+  $('#s-del').onclick=()=>{
+    const pac=state.pacientes.find(x=>x.id===s.pid);
+    confirmar({
+      titulo:'Excluir sessão?',
+      item:`${pac?pac.iniciais:'Paciente'} — ${fmtData(s.data)}`,
+      texto:`Essa ação <b>não pode ser desfeita</b>. Todo o registro dessa sessão será apagado: jogos aplicados, observações e raciocínio clínico.`,
+      onConfirm:()=>excluirSessao(id)
+    });
+  };
   $('#s-save').onclick=async()=>{
     syncFromDom();
     const jogos=jogosLocal.map(j=>({id:j.id,nome:j.nome,reacao:(j.reacao||'').trim(),trabalhado:j.trabalhado,extra:!!j.extra}));
@@ -1849,7 +2039,7 @@ function modalSessao(id){
     const reflexao=Object.values(rf).some(v=>v)?rf:null;
     const patch={data:$('#s-data').value||s.data,objetivo:$('#s-obj').value.trim(),nota:$('#s-nota').value.trim(),status:$('#s-real').checked?'realizada':'planejada',jogos,reflexao};
     const {data,error}=await safeWrite(pl=>sb.from('sessoes').update(pl).eq('id',id).select().single(),patch,['reflexao']);
-    if(error)return toast(error.message,true);
+    if(error)return toastErro(error,"Não consegui salvar a sessão. Suas anotações continuam aqui — tente de novo.");
     state.sessoes=state.sessoes.map(x=>x.id===id?sessFromRow(data):x);
     closeModal();render();
   };
@@ -1880,14 +2070,14 @@ function openConfig(){
       </div>
 
       <div class="set-sec">
-        <h5>${I.spark} Inteligência artificial</h5>
-        <p class="muted">A IA já vem configurada na plataforma — não precisa de chave. É usada na <b>Sugestão inteligente</b> (match entre jogo e paciente) e na importação de planilhas.</p>
-        <div><label class="flabel">Modelo</label><select id="f-model">
-          <option value="gemini-3.5-flash" ${model.includes('flash')&&!model.includes('lite')?'selected':''}>Gemini 3.5 Flash — recomendado</option>
-          <option value="gemini-3.1-flash-lite" ${model.includes('lite')?'selected':''}>Gemini 3.1 Flash-Lite — mais rápida</option>
+        <h5>${I.spark} Sugestões inteligentes</h5>
+        <p class="muted">A inteligência artificial já vem pronta — você não precisa configurar nada. Ela é usada na <b>Sugestão inteligente</b>, que cruza cada jogo com a demanda do paciente, e na importação de planilhas.</p>
+        <div><label class="flabel">Como você prefere as sugestões?</label><select id="f-model">
+          <option value="gemini-3.5-flash" ${model.includes('flash')&&!model.includes('lite')?'selected':''}>Mais caprichadas — recomendado</option>
+          <option value="gemini-3.1-flash-lite" ${model.includes('lite')?'selected':''}>Mais rápidas — respondem em menos tempo</option>
         </select></div>
-        <p class="muted">Para melhorar as sugestões, o sistema envia idade, demanda e observações do paciente ao modelo — o <b>nome do paciente nunca é enviado</b>.</p>
-        <button class="btn sm" id="c-save-ia" style="align-self:flex-start">${I.check} Salvar modelo</button>
+        <p class="muted">Para sugerir melhor, o sistema envia idade, demanda e observações do paciente — o <b>nome do paciente nunca é enviado</b>.</p>
+        <button class="btn sm" id="c-save-ia" style="align-self:flex-start">${I.check} Salvar preferência</button>
       </div>
 
       <div class="set-sec">
@@ -1908,7 +2098,7 @@ function openConfig(){
   $('#c-save-nome').onclick=async()=>{
     const n=$('#c-nome').value.trim(); if(!n)return toast("Digite um nome.",true);
     const {data,error}=await sb.auth.updateUser({data:{nome:n}});
-    if(error)return toast(error.message,true);
+    if(error)return toastErro(error,"Não consegui atualizar seu perfil.");
     state.user=data.user; toast("Perfil atualizado."); render(); openConfig();
   };
   $('#c-save-pass').onclick=async()=>{
@@ -1919,11 +2109,11 @@ function openConfig(){
     const {error:erroAtual}=await sb.auth.signInWithPassword({email:state.user.email,password:p0});
     if(erroAtual)return toast("Senha atual incorreta.",true);
     const {error}=await sb.auth.updateUser({password:p1});
-    if(error)return toast(error.message,true);
+    if(error)return toastErro(error,"Não consegui trocar a senha.");
     $('#c-pass0').value='';$('#c-pass1').value='';$('#c-pass2').value='';
     toast("Senha alterada com sucesso.");
   };
-  $('#c-save-ia').onclick=()=>{lsSet(MKEY,$('#f-model').value);toast("Modelo salvo.")};
+  $('#c-save-ia').onclick=()=>{lsSet(MKEY,$('#f-model').value);toast("Preferência salva.")};
   $('#c-backup').onclick=()=>{
     const payload={exportado_em:new Date().toISOString(),pacientes:state.pacientes,jogos:state.jogos,sessoes:state.sessoes,demandas:state.demandas};
     const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
@@ -1931,7 +2121,11 @@ function openConfig(){
     a.download=`${BRAND.nome.toLowerCase()}-backup-${hoje()}.json`;a.click();URL.revokeObjectURL(a.href);
     toast("Backup baixado.");
   };
-  $('#c-sair').onclick=()=>{if(confirm('Sair da conta?')){closeModal();sair()}};
+  $('#c-sair').onclick=()=>confirmar({
+    titulo:'Sair da conta?',
+    texto:'Você vai precisar entrar de novo pra acessar seus pacientes. Nada é apagado.',
+    confirmarLabel:'Sair',destrutivo:false,onConfirm:sair
+  });
 }
 
 
@@ -1995,7 +2189,7 @@ Responda SOMENTE com JSON válido, neste formato:
 {"objetivo":"...","jogos":[{"nome":"...","motivo":"..."}],"observacao":"..."}`;
     const parsed=await chamarGemini(prompt,model,2048);
     state.ai={loading:false,result:parsed,error:null};render();
-  }catch(e){ state.ai={loading:false,result:null,error:"Não consegui gerar agora: "+e.message};render(); }
+  }catch(e){ state.ai={loading:false,result:null,error:erroHumano(e,"Não consegui montar a sugestão agora. Tente de novo em instantes.")};render(); }
 }
 
 /* ============================ IMPORTAR PLANILHA (IA) ============================ */
@@ -2037,7 +2231,7 @@ Responda SOMENTE com um array JSON:
     arr=arr.map(g=>({nome:String(g.nome||"").trim(),areas:(g.areas||[]).filter(a=>AREAS.includes(a)),min:Number(g.idade_min)||4,max:g.idade_max?Number(g.idade_max):null,obs:String(g.obs||"").trim()})).filter(g=>g.nome);
     if(!arr.length){closeModal();return toast("A IA não encontrou jogos na planilha.",true)}
     previewImport(arr);
-  }catch(e){closeModal();toast("Erro ao importar: "+e.message,true)}
+  }catch(e){closeModal();toastErro(e,"Não consegui ler essa planilha. Confira se o arquivo tem uma coluna com o nome dos jogos.")}
 }
 function previewImport(games){
   const sel=new Set(games.map((_,i)=>i));
@@ -2062,7 +2256,7 @@ async function confirmarImport(games){
   if(!games.length)return closeModal();
   const rows=games.map(g=>({user_id:state.user.id,nome:g.nome,areas:g.areas,idade_min:g.min,idade_max:g.max,obs:g.obs}));
   const {data,error}=await sb.from('jogos').insert(rows).select();
-  if(error)return toast(error.message,true);
+  if(error)return toastErro(error,"Não consegui adicionar os itens ao banco.");
   state.jogos=[...state.jogos,...data.map(jogoFromRow)].sort((a,b)=>a.nome.localeCompare(b.nome));
   toast(`${data.length} jogo(s) adicionados.`);closeModal();render();
 }
